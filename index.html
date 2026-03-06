@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GeriScope — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:#f7f4ee;color:#0d1614;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+:root{
+  --ink:#0d1614;--sage:#3d6b5e;--sage-lt:#5a9080;--sage-pale:#e8f0ed;
+  --gold:#c9a84c;--gold-lt:#e8c97a;--cream:#f7f4ee;--white:#ffffff;
+  --gray:#6b7b7e;--border:#d4ddd9;--red:#c0392b;--amber:#e67e22;--green:#27ae60;
+}
+.serif{font-family:'Cormorant Garamond',Georgia,serif}
+.mono{font-family:'DM Mono',monospace}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--cream)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.fu{animation:fadeUp .5s ease both}
+input,textarea,select{font-family:'DM Sans',sans-serif}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
+
+// ── Seed data ─────────────────────────────────────────────────────────────
+const SEED_PATIENTS = [
+  {id:"p1",firstName:"Mario",lastName:"Rossi",dob:"1946-03-12",gender:"M",
+   ward:"Inpatients",physician:"Dr. Greco",admissionDate:"2025-02-10",
+   diagnoses:["Hypertension","Type 2 Diabetes","Mild cognitive impairment"],
+   medications:["Warfarin","Amiodarone","Diazepam","Metformin","Amlodipine"],
+   cfs:4,lastCGA:"2025-02-12",cgaStatus:"complete",
+   scores:{mmse:22,adl:4,iadl:3,mna:21,gds:8},
+   alerts:2},
+  {id:"p2",firstName:"Anna",lastName:"Bianchi",dob:"1939-07-28",gender:"F",
+   ward:"Inpatients",physician:"Dr. Russo",admissionDate:"2025-02-14",
+   diagnoses:["Atrial fibrillation","Osteoporosis","Depression"],
+   medications:["Aspirin","Lorazepam","Omeprazole","Furosemide"],
+   cfs:5,lastCGA:"2025-02-15",cgaStatus:"complete",
+   scores:{mmse:19,adl:3,iadl:2,mna:18,gds:12},
+   alerts:1},
+  {id:"p3",firstName:"Giuseppe",lastName:"Ferrari",dob:"1942-11-05",gender:"M",
+   ward:"Internal Medicine",physician:"Dr. Greco",admissionDate:"2025-02-16",
+   diagnoses:["Heart failure","COPD","Malnutrition"],
+   medications:["Digoxin","Spironolactone","Salbutamol","Prednisone"],
+   cfs:6,lastCGA:null,cgaStatus:"pending",
+   scores:{},
+   alerts:1},
+  {id:"p4",firstName:"Lucia",lastName:"Conti",dob:"1950-05-19",gender:"F",
+   ward:"Inpatients",physician:"Dr. Esposito",admissionDate:"2025-02-17",
+   diagnoses:["Hip fracture","Hypertension"],
+   medications:["Metoprolol","Calcium","Vitamin D","Tramadol"],
+   cfs:3,lastCGA:"2025-02-18",cgaStatus:"in_progress",
+   scores:{mmse:27,adl:5},
+   alerts:0},
+  {id:"p5",firstName:"Roberto",lastName:"Marino",dob:"1937-09-30",gender:"M",
+   ward:"Internal Medicine",physician:"Dr. Russo",admissionDate:"2025-02-18",
+   diagnoses:["Dementia","Hypertension","Urinary incontinence"],
+   medications:["Donepezil","Quetiapine","Hydrochlorothiazide","Nitrazepam"],
+   cfs:7,lastCGA:null,cgaStatus:"pending",
+   scores:{},
+   alerts:3},
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function getAge(dob){
+  const b=new Date(dob), n=new Date();
+  let a=n.getFullYear()-b.getFullYear();
+  if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate())) a--;
+  return a;
+}
+
+function cfsBadge(cfs){
+  if(cfs<=2) return {label:"Fit",color:"var(--green)",bg:"rgba(39,174,96,.12)"};
+  if(cfs<=4) return {label:"Vulnerable",color:"var(--amber)",bg:"rgba(230,126,34,.12)"};
+  if(cfs<=6) return {label:"Frail",color:"var(--red)",bg:"rgba(192,57,43,.12)"};
+  return {label:"Severely Frail",color:"var(--red)",bg:"rgba(192,57,43,.2)"};
+}
+
+function cgaStatusBadge(s){
+  if(s==="complete")    return {label:"Complete",   color:"var(--green)", bg:"rgba(39,174,96,.1)"};
+  if(s==="in_progress") return {label:"In Progress",color:"var(--amber)", bg:"rgba(230,126,34,.1)"};
+  return                       {label:"Pending",    color:"var(--gray)",  bg:"rgba(107,123,126,.1)"};
+}
+
+function initPatients(){
+  const saved=localStorage.getItem("gs_patients");
+  if(saved) return JSON.parse(saved);
+  localStorage.setItem("gs_patients",JSON.stringify(SEED_PATIENTS));
+  return SEED_PATIENTS;
+}
+
+function savePatients(pts){
+  localStorage.setItem("gs_patients",JSON.stringify(pts));
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────
+function Sidebar({active,setActive,branding={}}){
+  const nav=[
+    {id:"dashboard", icon:"⊡", label:"Dashboard"},
+    {id:"patients",  icon:"◎", label:"Patients"},
+    {id:"cga",       icon:"◈", label:"CGA Modules"},
+    {id:"reports",   icon:"◇", label:"Reports"},
+    {id:"settings",  icon:"◉", label:"Settings"},
+  ];
+  return(
+    <aside style={{width:220,background:"var(--ink)",display:"flex",flexDirection:"column",
+      height:"100vh",position:"fixed",top:0,left:0,zIndex:50}}>
+      {/* Logo */}
+      <div style={{padding:"28px 24px 20px",borderBottom:"1px solid rgba(255,255,255,.07)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <svg viewBox="0 0 22 22" style={{width:20,height:20}}>
+            <circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(90,144,128,.5)" strokeWidth="1"/>
+            <circle cx="11" cy="11" r="5.5" fill="none" stroke="rgba(90,144,128,.7)" strokeWidth=".8"/>
+            <circle cx="11" cy="11" r="2" fill="var(--sage-lt)"/>
+            <line x1="1.5" y1="11" x2="20.5" y2="11" stroke="rgba(90,144,128,.3)" strokeWidth=".6"/>
+            <line x1="11" y1="1.5" x2="11" y2="20.5" stroke="rgba(90,144,128,.3)" strokeWidth=".6"/>
+          </svg>
+          <span className="serif" style={{fontSize:20,fontWeight:600,color:"var(--white)",letterSpacing:"-0.02em"}}>
+            Geri<span style={{color:"var(--sage-lt)",fontStyle:"italic"}}>Scope</span>
+          </span>
+        </div>
+        <div className="mono" style={{fontSize:8,color:"var(--gold)",letterSpacing:"0.12em",marginTop:4,marginLeft:28}}>
+          CGA PLATFORM
+        </div>
+        {(branding.orgName||branding.orgSub)&&(
+          <div style={{marginTop:8,marginLeft:28,borderTop:"1px solid rgba(255,255,255,.07)",paddingTop:8}}>
+            {branding.orgName&&<div style={{fontSize:11,fontWeight:600,color:"rgba(255,255,255,.85)",lineHeight:1.3}}>{branding.orgName}</div>}
+            {branding.orgSub&&<div style={{fontSize:9,color:"rgba(255,255,255,.4)",marginTop:2,letterSpacing:"0.04em"}}>{branding.orgSub}</div>}
+          </div>
+        )}
+      </div>
+
+      {/* Nav */}
+      <nav style={{flex:1,padding:"16px 12px",display:"flex",flexDirection:"column",gap:2}}>
+        {nav.map(n=>{
+          const isActive=active===n.id;
+          return(
+            <button key={n.id} onClick={()=>setActive(n.id)}
+              style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",
+                borderRadius:3,border:"none",cursor:"pointer",textAlign:"left",width:"100%",
+                background:isActive?"rgba(61,107,94,.25)":"transparent",
+                color:isActive?"var(--white)":"rgba(255,255,255,.4)",
+                transition:"all .2s",
+                borderLeft:isActive?"2px solid var(--sage-lt)":"2px solid transparent"}}>
+              <span style={{fontSize:14,opacity:isActive?1:.6}}>{n.icon}</span>
+              <span style={{fontSize:13,fontWeight:isActive?500:400,letterSpacing:"0.01em"}}>{n.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* User */}
+      <div style={{padding:"16px 20px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:32,height:32,borderRadius:"50%",
+            background:"rgba(61,107,94,.3)",border:"1px solid rgba(61,107,94,.5)",
+            display:"flex",alignItems:"center",justifyContent:"center",
+            fontSize:12,fontWeight:600,color:"var(--sage-lt)"}}>
+            {(branding.physicianName||"Dr. M. Greco").split(" ").filter(w=>/^[A-Z]/.test(w)).slice(-2).map(w=>w[0]).join("") || "MG"}
+          </div>
+          <div>
+            <div style={{fontSize:12,fontWeight:500,color:"var(--white)"}}>{branding.physicianName||"Dr. M. Greco"}</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.35)"}}>{branding.physicianRole||"Geriatrics Unit"}</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ── Stat card ─────────────────────────────────────────────────────────────
+function StatCard({label,value,sub,color,icon}){
+  return(
+    <div style={{background:"var(--white)",border:"1px solid var(--border)",
+      padding:"24px 28px",borderRadius:3,position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:2,
+        background:`linear-gradient(90deg,${color},transparent)`}}/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div>
+          <div className="mono" style={{fontSize:10,color:"var(--gray)",letterSpacing:"0.1em",
+            textTransform:"uppercase",marginBottom:8}}>{label}</div>
+          <div className="serif" style={{fontSize:36,fontWeight:300,color:"var(--ink)",lineHeight:1}}>{value}</div>
+          {sub&&<div style={{fontSize:11,color:"var(--gray)",marginTop:6}}>{sub}</div>}
+        </div>
+        <div style={{fontSize:22,opacity:.4}}>{icon}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Patient row ───────────────────────────────────────────────────────────
+function PatientRow({p,onSelect,delay=0}){
+  const [hov,setHov]=useState(false);
+  const cfs=cfsBadge(p.cfs);
+  const cga=cgaStatusBadge(p.cgaStatus);
+  const age=getAge(p.dob);
+
+  return(
+    <tr onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      onClick={()=>onSelect(p)}
+      style={{cursor:"pointer",background:hov?"var(--sage-pale)":"var(--white)",
+        transition:"background .2s",animation:`fadeUp .4s ${delay}ms ease both`}}>
+
+      {/* Patient */}
+      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{width:36,height:36,borderRadius:"50%",flexShrink:0,
+            background:"var(--sage-pale)",border:"1.5px solid var(--border)",
+            display:"flex",alignItems:"center",justifyContent:"center",
+            fontSize:12,fontWeight:600,color:"var(--sage)"}}>
+            {p.firstName[0]}{p.lastName[0]}
+          </div>
+          <div>
+            <div style={{fontSize:14,fontWeight:500}}>{p.lastName}, {p.firstName}</div>
+            <div className="mono" style={{fontSize:10,color:"var(--gray)",marginTop:1}}>
+              {age}y · {p.gender} · {p.ward}
+            </div>
+          </div>
+        </div>
+      </td>
+
+      {/* Diagnoses */}
+      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
+        <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+          {p.diagnoses.slice(0,2).map(d=>(
+            <span key={d} style={{fontSize:10,padding:"2px 7px",borderRadius:2,
+              background:"rgba(107,123,126,.1)",color:"var(--gray)",letterSpacing:"0.02em"}}>{d}</span>
+          ))}
+          {p.diagnoses.length>2&&(
+            <span style={{fontSize:10,color:"var(--gray)"}}>+{p.diagnoses.length-2}</span>
+          )}
+        </div>
+      </td>
+
+      {/* CFS */}
+      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,
+          background:cfs.bg,padding:"3px 10px",borderRadius:20}}>
+          <span className="mono" style={{fontSize:11,fontWeight:600,color:cfs.color}}>{p.cfs}</span>
+          <span style={{fontSize:11,color:cfs.color}}>{cfs.label}</span>
+        </div>
+      </td>
+
+      {/* CGA status */}
+      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
+        <span style={{fontSize:11,padding:"3px 10px",borderRadius:20,
+          background:cga.bg,color:cga.color}}>{cga.label}</span>
+      </td>
+
+      {/* Alerts */}
+      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
+        {p.alerts>0?(
+          <div style={{display:"inline-flex",alignItems:"center",gap:5,
+            background:"rgba(192,57,43,.1)",padding:"3px 10px",borderRadius:20}}>
+            <span style={{fontSize:11,animation:"pulse 2s ease-in-out infinite",
+              color:"var(--red)"}}>⚠</span>
+            <span className="mono" style={{fontSize:11,color:"var(--red)",fontWeight:600}}>
+              {p.alerts} Beers
+            </span>
+          </div>
+        ):(
+          <span style={{fontSize:11,color:"var(--gray)"}}>—</span>
+        )}
+      </td>
+
+      {/* Action */}
+      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)",textAlign:"right"}}>
+        <button style={{fontSize:11,fontWeight:500,color:"var(--sage)",
+          background:"transparent",border:"1px solid var(--border)",
+          padding:"5px 14px",borderRadius:2,cursor:"pointer",
+          fontFamily:"'DM Sans',sans-serif",
+          transition:"all .2s",
+          ...(hov?{background:"var(--sage)",color:"var(--white)",borderColor:"var(--sage)"}:{})}}>
+          Open CGA →
+        </button>
+      </td>
+    </tr>
+  );
+}
+
+// ── New Patient Modal ─────────────────────────────────────────────────────
+function NewPatientModal({onClose,onSave}){
+  const [form,setForm]=useState({
+    firstName:"",lastName:"",dob:"",gender:"M",
+    ward:"Inpatients",physician:"Dr. Greco",
+    diagnoses:"",medications:"",
+  });
+  const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
+
+  function handleSave(){
+    if(!form.firstName||!form.lastName||!form.dob) return;
+    const newPt={
+      id:"p"+Date.now(),
+      firstName:form.firstName,lastName:form.lastName,
+      dob:form.dob,gender:form.gender,
+      ward:form.ward,physician:form.physician,
+      admissionDate:new Date().toISOString().split("T")[0],
+      diagnoses:form.diagnoses?form.diagnoses.split(",").map(s=>s.trim()).filter(Boolean):[],
+      medications:form.medications?form.medications.split(",").map(s=>s.trim()).filter(Boolean):[],
+      cfs:null,lastCGA:null,cgaStatus:"pending",scores:{},alerts:0,
+    };
+    onSave(newPt);
+  }
+
+  const fields=[
+    {label:"First Name *",k:"firstName",type:"text",half:true},
+    {label:"Last Name *",k:"lastName",type:"text",half:true},
+    {label:"Date of Birth *",k:"dob",type:"date",half:true},
+    {label:"Gender",k:"gender",type:"select",opts:[["M","Male"],["F","Female"]],half:true},
+    {label:"Ward",k:"ward",type:"select",opts:[["Inpatients","Inpatients"],["Outpatients","Outpatients"]],half:true},
+    {label:"Referring Physician",k:"physician",type:"text",half:true},
+    {label:"Diagnoses (comma-separated)",k:"diagnoses",type:"text",half:false},
+    {label:"Current Medications (comma-separated)",k:"medications",type:"text",half:false},
+  ];
+
+  const inputStyle={
+    width:"100%",padding:"9px 12px",
+    border:"1px solid var(--border)",borderRadius:2,
+    fontSize:13,background:"var(--cream)",color:"var(--ink)",
+    fontFamily:"'DM Sans',sans-serif",outline:"none",
+    transition:"border .2s",
+  };
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",
+      display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,
+      backdropFilter:"blur(4px)"}}>
+      <div style={{background:"var(--white)",width:"100%",maxWidth:580,
+        borderRadius:4,overflow:"hidden",
+        boxShadow:"0 24px 60px rgba(0,0,0,.2)",
+        animation:"slideIn .3s ease"}}>
+
+        {/* Header */}
+        <div style={{padding:"24px 28px",borderBottom:"1px solid var(--border)",
+          display:"flex",justifyContent:"space-between",alignItems:"center",
+          background:"var(--ink)"}}>
+          <div>
+            <div className="serif" style={{fontSize:22,fontWeight:600,color:"var(--white)"}}>
+              New Patient
+            </div>
+            <div className="mono" style={{fontSize:10,color:"rgba(255,255,255,.35)",
+              marginTop:3,letterSpacing:"0.08em"}}>REGISTER · GERISCOPE CGA</div>
+          </div>
+          <button onClick={onClose} style={{background:"rgba(255,255,255,.1)",border:"none",
+            color:"white",width:32,height:32,borderRadius:"50%",cursor:"pointer",
+            fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+
+        {/* Form */}
+        <div style={{padding:"28px",display:"flex",flexWrap:"wrap",gap:16}}>
+          {fields.map(f=>(
+            <div key={f.k} style={{width:f.half?"calc(50% - 8px)":"100%"}}>
+              <label style={{fontSize:11,fontWeight:500,color:"var(--gray)",
+                letterSpacing:"0.04em",display:"block",marginBottom:5}}>
+                {f.label}
+              </label>
+              {f.type==="select"?(
+                <select value={form[f.k]} onChange={set(f.k)} style={inputStyle}>
+                  {f.opts.map(([v,l])=><option key={v} value={v}>{l}</option>)}
+                </select>
+              ):(
+                <input type={f.type} value={form[f.k]} onChange={set(f.k)}
+                  style={inputStyle}
+                  onFocus={e=>e.target.style.borderColor="var(--sage)"}
+                  onBlur={e=>e.target.style.borderColor="var(--border)"}/>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{padding:"16px 28px",borderTop:"1px solid var(--border)",
+          display:"flex",justifyContent:"flex-end",gap:10,background:"var(--cream)"}}>
+          <button onClick={onClose}
+            style={{padding:"9px 24px",border:"1px solid var(--border)",
+              background:"transparent",borderRadius:2,cursor:"pointer",
+              fontSize:13,color:"var(--gray)",fontFamily:"'DM Sans',sans-serif"}}>
+            Cancel
+          </button>
+          <button onClick={handleSave}
+            style={{padding:"9px 24px",border:"none",
+              background:"var(--sage)",color:"var(--white)",borderRadius:2,cursor:"pointer",
+              fontSize:13,fontWeight:500,fontFamily:"'DM Sans',sans-serif",
+              transition:"background .2s"}}
+            onMouseEnter={e=>{e.target.style.background="var(--ink)";}}
+            onMouseLeave={e=>{e.target.style.background="var(--sage)";}}>
+            Register Patient →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// SETTINGS PANEL — Personalizzazione branding
+// ══════════════════════════════════════════════════════════════════════════
+function SettingsPanel({branding, onSave}){
+  const [form, setForm] = React.useState({...branding});
+  const [saved, setSaved] = React.useState(false);
+
+  function handleSave(){
+    onSave(form);
+    setSaved(true);
+    setTimeout(()=>setSaved(false), 2500);
+  }
+
+  const iS = {
+    width:"100%", padding:"10px 14px",
+    border:"1px solid var(--border)", borderRadius:2,
+    fontSize:13, background:"var(--white)", color:"var(--ink)",
+    fontFamily:"'DM Sans',sans-serif", outline:"none",
+  };
+  const labelS = {
+    fontSize:11, color:"var(--gray)", display:"block", marginBottom:5, fontWeight:500,
+  };
+
+  return(
+    <div className="fu">
+
+      {/* Live preview */}
+      <div style={{background:"var(--ink)",borderRadius:3,padding:"20px 24px",
+        marginBottom:28,display:"flex",alignItems:"center",gap:16}}>
+        <svg viewBox="0 0 22 22" style={{width:22,height:22,flexShrink:0}}>
+          <circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(90,144,128,.5)" strokeWidth="1"/>
+          <circle cx="11" cy="11" r="5.5" fill="none" stroke="rgba(90,144,128,.7)" strokeWidth=".8"/>
+          <circle cx="11" cy="11" r="2" fill="var(--sage-lt)"/>
+          <line x1="1.5" y1="11" x2="20.5" y2="11" stroke="rgba(90,144,128,.3)" strokeWidth=".6"/>
+          <line x1="11" y1="1.5" x2="11" y2="20.5" stroke="rgba(90,144,128,.3)" strokeWidth=".6"/>
+        </svg>
+        <div>
+          <div style={{display:"flex",alignItems:"baseline",gap:10}}>
+            <span className="serif" style={{fontSize:20,fontWeight:600,color:"white",letterSpacing:"-0.02em"}}>
+              Geri<span style={{color:"var(--sage-lt)",fontStyle:"italic"}}>Scope</span>
+            </span>
+            {form.orgName&&(
+              <span style={{fontSize:12,color:"var(--gold)",fontWeight:500}}>
+                · {form.orgName}
+              </span>
+            )}
+          </div>
+          {form.orgSub&&(
+            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",
+              fontFamily:"'DM Mono',monospace",letterSpacing:"0.06em",marginTop:2}}>
+              {form.orgSub.toUpperCase()}
+            </div>
+          )}
+          {form.physicianName&&(
+            <div style={{marginTop:8,display:"flex",alignItems:"center",gap:8}}>
+              <div style={{width:26,height:26,borderRadius:"50%",
+                background:"rgba(61,107,94,.4)",border:"1px solid rgba(61,107,94,.6)",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:10,fontWeight:700,color:"var(--sage-lt)"}}>
+                {(form.physicianName).split(" ").filter(w=>/^[A-Z]/.test(w)).slice(-2).map(w=>w[0]).join("")||"??"}
+              </div>
+              <div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.8)",fontWeight:500}}>{form.physicianName}</div>
+                {form.physicianRole&&<div style={{fontSize:9,color:"rgba(255,255,255,.35)"}}>{form.physicianRole}</div>}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="mono" style={{marginLeft:"auto",fontSize:8,color:"rgba(255,255,255,.2)",
+          letterSpacing:"0.1em"}}>ANTEPRIMA</div>
+      </div>
+
+      {/* Form */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24,maxWidth:780}}>
+
+        {/* Struttura */}
+        <div style={{background:"var(--white)",border:"1px solid var(--border)",
+          borderRadius:3,padding:"20px"}}>
+          <div className="mono" style={{fontSize:9,color:"var(--sage)",letterSpacing:"0.1em",
+            textTransform:"uppercase",marginBottom:16}}>Struttura / Organizzazione</div>
+
+          <div style={{marginBottom:14}}>
+            <label style={labelS}>Nome ospedale / studio / struttura</label>
+            <input type="text" value={form.orgName||""}
+              onChange={e=>setForm(f=>({...f,orgName:e.target.value}))}
+              placeholder="es. Ospedale S. Giovanni, Studio Geriatrico Roma..."
+              style={iS}
+              onFocus={e=>e.target.style.borderColor="var(--sage)"}
+              onBlur={e=>e.target.style.borderColor="var(--border)"}/>
+          </div>
+
+          <div>
+            <label style={labelS}>Reparto / Specializzazione (opzionale)</label>
+            <input type="text" value={form.orgSub||""}
+              onChange={e=>setForm(f=>({...f,orgSub:e.target.value}))}
+              placeholder="es. U.O. Geriatria, Ambulatorio Memoria..."
+              style={iS}
+              onFocus={e=>e.target.style.borderColor="var(--sage)"}
+              onBlur={e=>e.target.style.borderColor="var(--border)"}/>
+          </div>
+        </div>
+
+        {/* Sanitario */}
+        <div style={{background:"var(--white)",border:"1px solid var(--border)",
+          borderRadius:3,padding:"20px"}}>
+          <div className="mono" style={{fontSize:9,color:"var(--sage)",letterSpacing:"0.1em",
+            textTransform:"uppercase",marginBottom:16}}>Sanitario Responsabile</div>
+
+          <div style={{marginBottom:14}}>
+            <label style={labelS}>Nome e cognome</label>
+            <input type="text" value={form.physicianName||""}
+              onChange={e=>setForm(f=>({...f,physicianName:e.target.value}))}
+              placeholder="es. Dr. Mario Rossi"
+              style={iS}
+              onFocus={e=>e.target.style.borderColor="var(--sage)"}
+              onBlur={e=>e.target.style.borderColor="var(--border)"}/>
+          </div>
+
+          <div>
+            <label style={labelS}>Qualifica / Ruolo</label>
+            <input type="text" value={form.physicianRole||""}
+              onChange={e=>setForm(f=>({...f,physicianRole:e.target.value}))}
+              placeholder="es. Geriatra, Medico Internista, MMG..."
+              style={iS}
+              onFocus={e=>e.target.style.borderColor="var(--sage)"}
+              onBlur={e=>e.target.style.borderColor="var(--border)"}/>
+          </div>
+        </div>
+      </div>
+
+      {/* Save button */}
+      <div style={{marginTop:24,display:"flex",alignItems:"center",gap:14,maxWidth:780}}>
+        <button onClick={handleSave}
+          style={{padding:"11px 32px",
+            background:saved?"var(--green)":"var(--sage)",
+            color:"white",border:"none",borderRadius:2,cursor:"pointer",
+            fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",
+            transition:"background .3s",minWidth:180}}>
+          {saved ? "✓ Salvato!" : "Salva personalizzazione"}
+        </button>
+        <div style={{fontSize:11,color:"var(--gray)"}}>
+          Le impostazioni sono salvate nel browser e applicate a tutte le sessioni future.
+        </div>
+      </div>
+
+      {/* Info box */}
+      <div style={{marginTop:28,background:"rgba(201,168,76,.07)",
+        border:"1px solid rgba(201,168,76,.2)",borderRadius:3,
+        padding:"14px 18px",maxWidth:780}}>
+        <div className="mono" style={{fontSize:8.5,color:"var(--gold)",
+          letterSpacing:"0.08em",marginBottom:6}}>DOVE COMPARE IL BRANDING</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,fontSize:11,color:"var(--gray)"}}>
+          {[
+            "Sidebar della dashboard (sotto il logo)",
+            "Barra superiore della dashboard",
+            "Area utente in fondo alla sidebar",
+            "Modulo VMG — intestazione laterale",
+            "Report PDF stampato del paziente",
+            "Schede di somministrazione dei test",
+          ].map((item,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{color:"var(--sage)",fontWeight:700}}>✓</span> {item}
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+
+function Dashboard(){
+  const [disclaimerDone, setDisclaimerDone] = React.useState(
+    ()=>sessionStorage.getItem("gs_disclaimer")==="1"
+  );
+  function acceptDisclaimer(){ sessionStorage.setItem("gs_disclaimer","1"); setDisclaimerDone(true); }
+
+  const [patients,setPatients]=useState(initPatients);
+  const [search,setSearch]=useState("");
+  const [filterWard,setFilterWard]=useState("All");
+  const [filterCGA,setFilterCGA]=useState("All");
+  const [showModal,setShowModal]=useState(false);
+  const [activeNav,setActiveNav]=useState("dashboard");
+  const [selectedPt,setSelectedPt]=useState(null);
+  const [branding,setBranding]=useState(()=>{
+    try{ return JSON.parse(localStorage.getItem("gs_branding")||"null")||{
+      orgName:"",orgSub:"",physicianName:"Dr. M. Greco",physicianRole:"Geriatrics Unit"
+    }; }catch(e){ return {orgName:"",orgSub:"",physicianName:"Dr. M. Greco",physicianRole:"Geriatrics Unit"}; }
+  });
+  function saveBranding(b){ setBranding(b); localStorage.setItem("gs_branding",JSON.stringify(b)); }
+
+  const wards=["All",...[...new Set(patients.map(p=>p.ward))]];
+  const cgaStatuses=["All","pending","in_progress","complete"];
+
+  const filtered=patients.filter(p=>{
+    const q=search.toLowerCase();
+    const matchSearch=!q||
+      p.firstName.toLowerCase().includes(q)||
+      p.lastName.toLowerCase().includes(q)||
+      p.diagnoses.some(d=>d.toLowerCase().includes(q));
+    const matchWard=filterWard==="All"||p.ward===filterWard;
+    const matchCGA=filterCGA==="All"||p.cgaStatus===filterCGA;
+    return matchSearch&&matchWard&&matchCGA;
+  });
+
+  const stats={
+    total:patients.length,
+    pending:patients.filter(p=>p.cgaStatus==="pending").length,
+    alerts:patients.reduce((s,p)=>s+p.alerts,0),
+    frail:patients.filter(p=>p.cfs>=5).length,
+  };
+
+  function addPatient(pt){
+    const updated=[pt,...patients];
+    setPatients(updated);
+    savePatients(updated);
+    setShowModal(false);
+  }
+
+  if(!disclaimerDone) return <DisclaimerModal onAccept={acceptDisclaimer}/>;
+
+  return(
+    <div style={{display:"flex",minHeight:"100vh",background:"var(--cream)"}}>
+      <Sidebar active={activeNav} setActive={setActiveNav} branding={branding}/>
+
+      {/* Main */}
+      <main style={{marginLeft:220,flex:1,display:"flex",flexDirection:"column",minHeight:"100vh"}}>
+
+        {/* Top bar */}
+        <header style={{background:"var(--white)",borderBottom:"1px solid var(--border)",
+          padding:"16px 40px",display:"flex",alignItems:"center",justifyContent:"space-between",
+          position:"sticky",top:0,zIndex:40}}>
+          <div>
+            <div style={{display:"flex",alignItems:"baseline",gap:12}}>
+              <div className="serif" style={{fontSize:22,fontWeight:600,letterSpacing:"-0.01em"}}>
+                {activeNav==="settings"?"Impostazioni":"Patient Dashboard"}
+              </div>
+              {branding.orgName&&activeNav!=="settings"&&(
+                <div style={{fontSize:12,color:"var(--sage)",fontWeight:500,
+                  padding:"2px 10px",borderRadius:10,
+                  background:"rgba(61,107,94,.08)",border:"1px solid rgba(61,107,94,.15)"}}>
+                  {branding.orgName}
+                </div>
+              )}
+            </div>
+            <div className="mono" style={{fontSize:10,color:"var(--gray)",
+              letterSpacing:"0.08em",marginTop:2}}>
+              {new Date().toLocaleDateString("en-GB",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
+            </div>
+          </div>
+          <div style={{display:"flex",gap:12,alignItems:"center"}}>
+            {stats.alerts>0&&(
+              <div style={{display:"flex",alignItems:"center",gap:6,
+                background:"rgba(192,57,43,.08)",border:"1px solid rgba(192,57,43,.2)",
+                padding:"6px 14px",borderRadius:20}}>
+                <span style={{color:"var(--red)",animation:"pulse 2s ease-in-out infinite"}}>⚠</span>
+                <span style={{fontSize:12,color:"var(--red)",fontWeight:500}}>
+                  {stats.alerts} Beers alerts
+                </span>
+              </div>
+            )}
+            <button onClick={()=>setShowModal(true)}
+              style={{padding:"9px 22px",background:"var(--sage)",color:"var(--white)",
+                border:"none",borderRadius:2,cursor:"pointer",
+                fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,
+                transition:"background .2s"}}
+              onMouseEnter={e=>{e.target.style.background="var(--ink)";}}
+              onMouseLeave={e=>{e.target.style.background="var(--sage)";}}>
+              + New Patient
+            </button>
+          </div>
+        </header>
+
+        <div style={{padding:"32px 40px",flex:1}}>
+          {activeNav==="settings"&&(
+            <SettingsPanel branding={branding} onSave={saveBranding}/>
+          )}
+          {activeNav!=="settings"&&(
+          <>
+
+          {/* Stats */}
+          <div className="fu" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:32}}>
+            <StatCard label="Total Patients" value={stats.total} sub="Currently admitted" color="var(--sage)" icon="◎"/>
+            <StatCard label="Pending CGA" value={stats.pending} sub="Assessment required" color="var(--amber)" icon="◈"/>
+            <StatCard label="Beers Alerts" value={stats.alerts} sub="Medication review needed" color="var(--red)" icon="⚠"/>
+            <StatCard label="Frail / Severely Frail" value={stats.frail} sub="CFS ≥ 5" color="var(--gold)" icon="◇"/>
+          </div>
+
+          {/* Filters */}
+          <div style={{display:"flex",gap:12,marginBottom:20,alignItems:"center",flexWrap:"wrap"}}>
+            {/* Search */}
+            <div style={{position:"relative",flex:1,minWidth:220}}>
+              <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",
+                fontSize:14,color:"var(--gray)"}}>⊡</span>
+              <input value={search} onChange={e=>setSearch(e.target.value)}
+                placeholder="Search by name or diagnosis..."
+                style={{width:"100%",padding:"9px 12px 9px 34px",
+                  border:"1px solid var(--border)",borderRadius:2,fontSize:13,
+                  background:"var(--white)",color:"var(--ink)",
+                  fontFamily:"'DM Sans',sans-serif",outline:"none"}}
+                onFocus={e=>e.target.style.borderColor="var(--sage)"}
+                onBlur={e=>e.target.style.borderColor="var(--border)"}/>
+            </div>
+
+            {/* Ward filter */}
+            <select value={filterWard} onChange={e=>setFilterWard(e.target.value)}
+              style={{padding:"9px 12px",border:"1px solid var(--border)",borderRadius:2,
+                fontSize:13,background:"var(--white)",color:"var(--ink)",
+                fontFamily:"'DM Sans',sans-serif",cursor:"pointer",outline:"none"}}>
+              {wards.map(w=><option key={w}>{w==="All"?"All":w}</option>)}
+            </select>
+
+            {/* CGA filter */}
+            <select value={filterCGA} onChange={e=>setFilterCGA(e.target.value)}
+              style={{padding:"9px 12px",border:"1px solid var(--border)",borderRadius:2,
+                fontSize:13,background:"var(--white)",color:"var(--ink)",
+                fontFamily:"'DM Sans',sans-serif",cursor:"pointer",outline:"none"}}>
+              <option value="All">All CGA Status</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="complete">Complete</option>
+            </select>
+
+            <div className="mono" style={{fontSize:11,color:"var(--gray)",marginLeft:"auto"}}>
+              {filtered.length} of {patients.length} patients
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{background:"var(--white)",border:"1px solid var(--border)",
+            borderRadius:3,overflow:"hidden"}}>
+            <table style={{width:"100%",borderCollapse:"collapse"}}>
+              <thead>
+                <tr style={{background:"var(--cream)"}}>
+                  {["Patient","Diagnoses","Frailty (CFS)","CGA Status","Beers Alert",""].map(h=>(
+                    <th key={h} style={{padding:"11px 20px",textAlign:"left",
+                      fontSize:10,fontWeight:500,color:"var(--gray)",
+                      letterSpacing:"0.08em",textTransform:"uppercase",
+                      borderBottom:"1px solid var(--border)",
+                      fontFamily:"'DM Mono',monospace"}}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length===0?(
+                  <tr><td colSpan={6} style={{padding:"40px",textAlign:"center",color:"var(--gray)",fontSize:14}}>
+                    No patients found.
+                  </td></tr>
+                ):filtered.map((p,i)=>(
+                  <PatientRow key={p.id} p={p} onSelect={setSelectedPt} delay={i*40}/>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer note */}
+          <div className="mono" style={{fontSize:10,color:"var(--gray)",marginTop:16,
+            letterSpacing:"0.06em",textAlign:"right"}}>
+            Data saved locally · GeriScope CGA Platform v2.0
+          </div>
+          </>
+          )}
+        </div>
+      </main>
+
+      {/* Modals */}
+      {showModal&&<NewPatientModal onClose={()=>setShowModal(false)} onSave={addPatient}/>}
+
+      {/* Patient detail panel */}
+      {selectedPt&&(
+        <PatientPanel p={selectedPt} onClose={()=>setSelectedPt(null)}/>
+      )}
+      <DisclaimerFooter/>
+    </div>
+  );
+}
+
+// ── Patient side panel ────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// DIARIO CLINICO — storage helpers
+// ══════════════════════════════════════════════════════════════════════════
+const DIARY_TYPES = [
+  "Visita ambulatoriale","Contatto telefonico","Nota clinica",
+  "Aggiornamento terapia","Consulenza specialistica","Rivalutazione VMG",
+  "Dimissione / Ricovero","Colloquio familiare","Procedura / Esame",
+];
+
+function loadDiary(ptId){
+  try{ return JSON.parse(localStorage.getItem("gs_diary_"+ptId)||"[]"); }
+  catch(e){ return []; }
+}
+function saveDiary(ptId, entries){
+  localStorage.setItem("gs_diary_"+ptId, JSON.stringify(entries));
+}
+function newEntryId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+// ── Diario component ──────────────────────────────────────────────────────
+function DiaryTab({p}){
+  const [entries, setEntries] = React.useState(()=>loadDiary(p.id));
+  const [showForm, setShowForm] = React.useState(false);
+  const [editing, setEditing] = React.useState(null); // entry id being edited
+  const [filter, setFilter] = React.useState("Tutti");
+  const [form, setForm] = React.useState({
+    date: new Date().toISOString().split("T")[0],
+    time: new Date().toTimeString().slice(0,5),
+    type: DIARY_TYPES[0],
+    clinician: p.physician||"",
+    text: "",
+    tags: "",
+  });
+
+  function persist(next){ setEntries(next); saveDiary(p.id, next); }
+
+  function openNew(){
+    setForm({
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toTimeString().slice(0,5),
+      type: DIARY_TYPES[0],
+      clinician: p.physician||"",
+      text: "", tags: "",
+    });
+    setEditing(null);
+    setShowForm(true);
+  }
+
+  function openEdit(entry){
+    setForm({...entry, tags:(entry.tags||[]).join(", ")});
+    setEditing(entry.id);
+    setShowForm(true);
+  }
+
+  function saveEntry(){
+    if(!form.text.trim()) return;
+    const entry = {
+      ...form,
+      id: editing || newEntryId(),
+      tags: form.tags ? form.tags.split(",").map(t=>t.trim()).filter(Boolean) : [],
+    };
+    let next;
+    if(editing){
+      next = entries.map(e=>e.id===editing ? entry : e);
+    } else {
+      next = [entry, ...entries];
+    }
+    persist(next);
+    setShowForm(false);
+    setEditing(null);
+  }
+
+  function deleteEntry(id){
+    if(!window.confirm("Eliminare questa nota?")) return;
+    persist(entries.filter(e=>e.id!==id));
+  }
+
+  const types = ["Tutti", ...DIARY_TYPES];
+  const filtered = filter==="Tutti" ? entries : entries.filter(e=>e.type===filter);
+
+  const TYPE_COLORS = {
+    "Visita ambulatoriale":     {c:"#27ae60",b:"rgba(39,174,96,.1)"},
+    "Contatto telefonico":      {c:"#2980b9",b:"rgba(41,128,185,.1)"},
+    "Nota clinica":             {c:"#6b7b7e",b:"rgba(107,123,126,.1)"},
+    "Aggiornamento terapia":    {c:"#e67e22",b:"rgba(230,126,34,.1)"},
+    "Consulenza specialistica": {c:"#8e44ad",b:"rgba(142,68,173,.1)"},
+    "Rivalutazione VMG":        {c:"#3d6b5e",b:"rgba(61,107,94,.12)"},
+    "Dimissione / Ricovero":    {c:"#c0392b",b:"rgba(192,57,43,.1)"},
+    "Colloquio familiare":      {c:"#c9a84c",b:"rgba(201,168,76,.1)"},
+    "Procedura / Esame":        {c:"#16a085",b:"rgba(22,160,133,.1)"},
+  };
+
+  function tcol(type){ return TYPE_COLORS[type]||{c:"var(--gray)",b:"rgba(107,123,126,.1)"}; }
+
+  function fmtDate(d){
+    if(!d) return "";
+    const [y,m,dd] = d.split("-");
+    const months=["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+    return `${dd} ${months[parseInt(m)-1]} ${y}`;
+  }
+
+  const iS = {
+    padding:"6px 10px",border:"1px solid var(--border)",borderRadius:2,
+    fontSize:12,background:"var(--cream)",color:"var(--ink)",
+    fontFamily:"'DM Sans',sans-serif",width:"100%",
+  };
+
+  return(
+    <div>
+      {/* Header azione */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <div>
+          <div style={{fontSize:13,fontWeight:600,color:"var(--ink)"}}>
+            Diario Clinico
+          </div>
+          <div style={{fontSize:10,color:"var(--gray)",marginTop:1}}>
+            {entries.length} {entries.length===1?"nota":"note"} registrate
+          </div>
+        </div>
+        <button onClick={openNew}
+          style={{padding:"8px 14px",background:"var(--sage)",color:"white",border:"none",
+            borderRadius:2,cursor:"pointer",fontSize:11,fontWeight:600,
+            fontFamily:"'DM Sans',sans-serif",display:"flex",alignItems:"center",gap:5}}>
+          + Nuova nota
+        </button>
+      </div>
+
+      {/* Form nuova/modifica nota */}
+      {showForm&&(
+        <div style={{background:"var(--cream)",border:"1.5px solid rgba(61,107,94,.25)",
+          borderRadius:3,padding:"14px",marginBottom:14}}>
+          <div className="mono" style={{fontSize:8.5,color:"var(--sage)",letterSpacing:"0.1em",
+            textTransform:"uppercase",marginBottom:10}}>
+            {editing ? "Modifica nota" : "Nuova nota clinica"}
+          </div>
+
+          {/* Date, time, type row */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+            <div>
+              <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>Data</label>
+              <input type="date" value={form.date}
+                onChange={e=>setForm(f=>({...f,date:e.target.value}))} style={iS}/>
+            </div>
+            <div>
+              <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>Ora</label>
+              <input type="time" value={form.time}
+                onChange={e=>setForm(f=>({...f,time:e.target.value}))} style={iS}/>
+            </div>
+          </div>
+          <div style={{marginBottom:8}}>
+            <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>Tipo contatto</label>
+            <select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))} style={iS}>
+              {DIARY_TYPES.map(t=><option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div style={{marginBottom:8}}>
+            <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>Sanitario</label>
+            <input type="text" value={form.clinician}
+              onChange={e=>setForm(f=>({...f,clinician:e.target.value}))}
+              placeholder="Nome e qualifica..."
+              style={iS}/>
+          </div>
+          <div style={{marginBottom:8}}>
+            <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>
+              Nota clinica
+            </label>
+            <textarea rows={5} value={form.text}
+              onChange={e=>setForm(f=>({...f,text:e.target.value}))}
+              placeholder="Descrizione del contatto, riscontri clinici, modifiche terapeutiche, istruzioni al paziente/caregiver..."
+              style={{...iS,resize:"vertical",lineHeight:1.65}}/>
+          </div>
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>
+              Tag (opzionali, separati da virgola)
+            </label>
+            <input type="text" value={form.tags}
+              onChange={e=>setForm(f=>({...f,tags:e.target.value}))}
+              placeholder="es. caduta, dolore, cognitivo, terapia..."
+              style={iS}/>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={saveEntry}
+              style={{flex:1,padding:"9px",background:"var(--sage)",color:"white",border:"none",
+                borderRadius:2,cursor:"pointer",fontSize:12,fontWeight:600,
+                fontFamily:"'DM Sans',sans-serif"}}>
+              {editing ? "Aggiorna" : "Salva nota"}
+            </button>
+            <button onClick={()=>{setShowForm(false);setEditing(null);}}
+              style={{padding:"9px 16px",background:"transparent",color:"var(--gray)",
+                border:"1px solid var(--border)",borderRadius:2,cursor:"pointer",fontSize:12,
+                fontFamily:"'DM Sans',sans-serif"}}>
+              Annulla
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Filter chips */}
+      {entries.length > 0 && (
+        <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:12}}>
+          {["Tutti",...[...new Set(entries.map(e=>e.type))]].map(t=>(
+            <button key={t} onClick={()=>setFilter(t)}
+              style={{padding:"3px 9px",borderRadius:12,border:"1px solid",fontSize:10,
+                cursor:"pointer",fontFamily:"'DM Sans',sans-serif",
+                borderColor:filter===t?"var(--sage)":"var(--border)",
+                background:filter===t?"var(--sage)":"transparent",
+                color:filter===t?"white":"var(--gray)"}}>
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Entries */}
+      {filtered.length===0&&(
+        <div style={{textAlign:"center",padding:"32px 16px",color:"var(--gray)"}}>
+          <div style={{fontSize:28,marginBottom:8,opacity:.3}}>📋</div>
+          <div style={{fontSize:12}}>
+            {entries.length===0
+              ? "Nessuna nota ancora registrata.\nCliccate + Nuova nota per iniziare."
+              : "Nessuna nota per il filtro selezionato."}
+          </div>
+        </div>
+      )}
+
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {filtered.map(entry=>{
+          const tc = tcol(entry.type);
+          return(
+            <div key={entry.id}
+              style={{background:"var(--white)",border:"1px solid var(--border)",
+                borderRadius:2,overflow:"hidden"}}>
+              {/* Entry header */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+                padding:"9px 12px",borderBottom:"1px solid var(--border)",
+                background:"rgba(0,0,0,.015)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:10,padding:"2px 7px",borderRadius:10,
+                    background:tc.b,color:tc.c,fontWeight:600,whiteSpace:"nowrap"}}>
+                    {entry.type}
+                  </span>
+                  <span className="mono" style={{fontSize:10,color:"var(--gray)"}}>
+                    {fmtDate(entry.date)}{entry.time?" · "+entry.time:""}
+                  </span>
+                </div>
+                <div style={{display:"flex",gap:4}}>
+                  <button onClick={()=>openEdit(entry)}
+                    style={{padding:"2px 7px",background:"transparent",border:"1px solid var(--border)",
+                      borderRadius:2,cursor:"pointer",fontSize:10,color:"var(--gray)",
+                      fontFamily:"'DM Sans',sans-serif"}}>
+                    Modifica
+                  </button>
+                  <button onClick={()=>deleteEntry(entry.id)}
+                    style={{padding:"2px 7px",background:"transparent",border:"1px solid rgba(192,57,43,.2)",
+                      borderRadius:2,cursor:"pointer",fontSize:10,color:"var(--red)",
+                      fontFamily:"'DM Sans',sans-serif"}}>
+                    ×
+                  </button>
+                </div>
+              </div>
+              {/* Entry body */}
+              <div style={{padding:"10px 12px"}}>
+                {entry.clinician&&(
+                  <div className="mono" style={{fontSize:9,color:"var(--sage)",
+                    letterSpacing:"0.06em",marginBottom:5}}>{entry.clinician}</div>
+                )}
+                <div style={{fontSize:12,lineHeight:1.7,color:"var(--ink)",
+                  whiteSpace:"pre-wrap"}}>{entry.text}</div>
+                {entry.tags&&entry.tags.length>0&&(
+                  <div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:8}}>
+                    {entry.tags.map(tag=>(
+                      <span key={tag} style={{fontSize:9,padding:"1px 6px",borderRadius:8,
+                        background:"var(--cream)",color:"var(--gray)",
+                        border:"1px solid var(--border)"}}>#{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PATIENT PANEL — with tabs
+// ══════════════════════════════════════════════════════════════════════════
+function PatientPanel({p,onClose}){
+  const [panelTab, setPanelTab] = React.useState("overview");
+  const age=getAge(p.dob);
+  const cfs=cfsBadge(p.cfs||0);
+
+  const BEERS=[
+    {drug:"Warfarin",reason:"High bleeding risk in elderly"},
+    {drug:"Amiodarone",reason:"Risk of thyroid dysfunction and pulmonary toxicity"},
+    {drug:"Diazepam",reason:"Benzodiazepines: fall risk, cognitive impairment"},
+    {drug:"Lorazepam",reason:"Benzodiazepines: fall risk, cognitive impairment"},
+    {drug:"Nitrazepam",reason:"Benzodiazepines: fall risk, cognitive impairment"},
+    {drug:"Quetiapine",reason:"Antipsychotics: stroke risk, mortality in dementia"},
+    {drug:"Digoxin",reason:"Narrow therapeutic index, toxicity risk"},
+    {drug:"Hydrochlorothiazide",reason:"Risk of hyponatremia and hypokalemia"},
+    {drug:"Tramadol",reason:"Opioids: fall risk, delirium, constipation"},
+    {drug:"Prednisone",reason:"Systemic corticosteroids: hyperglycemia, delirium risk"},
+  ];
+
+  const beersAlerts=p.medications
+    .map(med=>{const hit=BEERS.find(b=>med.toLowerCase().includes(b.drug.toLowerCase()));return hit?{med,reason:hit.reason}:null;})
+    .filter(Boolean);
+
+  const ts = (t) => ({
+    flex:1, padding:"10px 8px", fontSize:11, fontWeight:panelTab===t?600:400,
+    cursor:"pointer", border:"none",
+    borderBottom:panelTab===t?"2px solid var(--sage)":"2px solid transparent",
+    background:"transparent",
+    color:panelTab===t?"var(--sage)":"var(--gray)",
+    fontFamily:"'DM Sans',sans-serif", transition:"all .15s",
+  });
+
+  return(
+    <div style={{position:"fixed",top:0,right:0,bottom:0,width:420,
+      background:"var(--white)",borderLeft:"1px solid var(--border)",
+      zIndex:100,display:"flex",flexDirection:"column",
+      boxShadow:"-8px 0 32px rgba(0,0,0,.1)",
+      animation:"slideIn .3s ease"}}>
+
+      {/* Header */}
+      <div style={{padding:"22px 24px 0",background:"var(--ink)",flexShrink:0}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:600,color:"var(--white)",
+              fontFamily:"'Cormorant Garamond',serif"}}>
+              {p.lastName}, {p.firstName}
+            </div>
+            <div className="mono" style={{fontSize:10,color:"rgba(255,255,255,.4)",
+              marginTop:3,letterSpacing:"0.08em"}}>
+              {age}y · {p.gender} · {p.ward}
+            </div>
+          </div>
+          <button onClick={onClose}
+            style={{background:"rgba(255,255,255,.1)",border:"none",color:"white",
+              width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:18,
+              display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+        {p.cfs&&(
+          <div style={{marginBottom:10,display:"inline-flex",alignItems:"center",gap:6,
+            background:cfs.bg,padding:"3px 10px",borderRadius:20}}>
+            <span className="mono" style={{fontSize:11,fontWeight:600,color:cfs.color}}>CFS {p.cfs}</span>
+            <span style={{fontSize:11,color:cfs.color}}>{cfs.label}</span>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div style={{display:"flex",borderTop:"1px solid rgba(255,255,255,.08)",marginTop:4}}>
+          <button style={ts("overview")} onClick={()=>setPanelTab("overview")}>Panoramica</button>
+          <button style={{...ts("diary"),position:"relative"}} onClick={()=>setPanelTab("diary")}>
+            Diario Clinico
+            <span style={{marginLeft:5,fontSize:8,padding:"1px 5px",borderRadius:8,
+              background:"var(--gold)",color:"var(--ink)",fontWeight:700,
+              verticalAlign:"middle"}}>PRO</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Body — scrollable */}
+      <div style={{flex:1,overflowY:"auto",padding:"18px 22px"}}>
+
+        {panelTab==="overview"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:18}}>
+
+            {/* Diagnoses */}
+            <div>
+              <div className="mono" style={{fontSize:10,color:"var(--gray)",letterSpacing:"0.1em",
+                textTransform:"uppercase",marginBottom:8}}>Diagnosi Attive</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                {p.diagnoses.map(d=>(
+                  <span key={d} style={{fontSize:11,padding:"3px 9px",borderRadius:2,
+                    background:"var(--sage-pale)",color:"var(--sage)",
+                    border:"1px solid rgba(61,107,94,.2)"}}>{d}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Medications */}
+            <div>
+              <div className="mono" style={{fontSize:10,color:"var(--gray)",letterSpacing:"0.1em",
+                textTransform:"uppercase",marginBottom:8}}>Terapia in Atto</div>
+              <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                {p.medications.map(m=>{
+                  const isAlert=beersAlerts.find(b=>b.med===m);
+                  return(
+                    <div key={m} style={{display:"flex",alignItems:"center",gap:8,
+                      padding:"6px 10px",borderRadius:2,
+                      background:isAlert?"rgba(192,57,43,.06)":"rgba(107,123,126,.05)",
+                      border:`1px solid ${isAlert?"rgba(192,57,43,.2)":"var(--border)"}`}}>
+                      <span style={{fontSize:13}}>{isAlert?"⚠":"•"}</span>
+                      <span style={{fontSize:12,color:isAlert?"var(--red)":"var(--ink)",
+                        fontWeight:isAlert?500:400}}>{m}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Beers */}
+            {beersAlerts.length>0&&(
+              <div style={{background:"rgba(192,57,43,.06)",border:"1px solid rgba(192,57,43,.2)",
+                borderRadius:3,padding:"14px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+                  <span style={{color:"var(--red)"}}>⚠</span>
+                  <span className="mono" style={{fontSize:10,color:"var(--red)",
+                    letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:600}}>
+                    {beersAlerts.length} Beers Criteria Alert{beersAlerts.length>1?"s":""}
+                  </span>
+                </div>
+                {beersAlerts.map(a=>(
+                  <div key={a.med} style={{marginBottom:7,paddingBottom:7,
+                    borderBottom:"1px solid rgba(192,57,43,.1)"}}>
+                    <div style={{fontSize:12,fontWeight:600,color:"var(--red)",marginBottom:2}}>{a.med}</div>
+                    <div style={{fontSize:11,color:"var(--gray)",lineHeight:1.5}}>{a.reason}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* CGA Scores */}
+            {Object.keys(p.scores).length>0&&(
+              <div>
+                <div className="mono" style={{fontSize:10,color:"var(--gray)",letterSpacing:"0.1em",
+                  textTransform:"uppercase",marginBottom:8}}>Ultimi Score VMG</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+                  {Object.entries(p.scores).map(([k,v])=>(
+                    <div key={k} style={{padding:"10px 13px",background:"var(--cream)",
+                      border:"1px solid var(--border)",borderRadius:2}}>
+                      <div className="mono" style={{fontSize:9,color:"var(--gray)",
+                        textTransform:"uppercase",letterSpacing:"0.08em"}}>{k}</div>
+                      <div className="serif" style={{fontSize:22,fontWeight:300,color:"var(--ink)",marginTop:2}}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* CTA */}
+            <button
+              onClick={()=>{
+                localStorage.setItem("gs_active_patient",JSON.stringify(p));
+                window.open("geriscope-cga-v2.html","_blank");
+              }}
+              style={{width:"100%",padding:"12px",background:"var(--sage)",
+                color:"var(--white)",border:"none",borderRadius:2,cursor:"pointer",
+                fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500}}
+              onMouseEnter={e=>{e.target.style.background="var(--ink)";}}
+              onMouseLeave={e=>{e.target.style.background="var(--sage)";}}>
+              {p.cgaStatus==="complete"?"📄 View Report →":"▶ Start CGA →"}
+            </button>
+          </div>
+        )}
+
+        {panelTab==="diary"&&<DiaryTab p={p}/>}
+
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DISCLAIMER MODALE
+// ═══════════════════════════════════════════════════════════════════════════
+function DisclaimerModal({onAccept}){
+  const [checked, setChecked] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+  function handleScroll(e){
+    const el=e.target;
+    if(el.scrollTop+el.clientHeight>=el.scrollHeight-10) setScrolled(true);
+  }
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:99999,
+      background:"rgba(10,18,16,.93)",backdropFilter:"blur(6px)",
+      display:"flex",alignItems:"center",justifyContent:"center",
+      padding:"20px",fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{background:"#fff",borderRadius:6,width:"100%",maxWidth:620,
+        maxHeight:"90vh",display:"flex",flexDirection:"column",
+        boxShadow:"0 30px 80px rgba(0,0,0,.5)"}}>
+        <div style={{background:"#1a2e28",borderRadius:"6px 6px 0 0",
+          padding:"20px 26px",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:3}}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+              stroke="#c9a84c" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span style={{fontFamily:"'Cormorant Garamond',serif",
+              fontSize:19,fontWeight:600,color:"#fff"}}>
+              Avviso Importante — Termini d'Uso
+            </span>
+          </div>
+          <div style={{fontSize:9,color:"rgba(255,255,255,.35)",
+            fontFamily:"'DM Mono',monospace",letterSpacing:"0.08em"}}>
+            GERISCOPE CGA PLATFORM · VERSIONE BETA · LEGGERE CON ATTENZIONE
+          </div>
+        </div>
+        <div onScroll={handleScroll}
+          style={{overflowY:"auto",padding:"20px 26px",flex:1,
+            fontSize:12,lineHeight:1.75,color:"#222"}}>
+          <div style={{background:"#fff8e1",border:"1.5px solid #c9a84c",
+            borderRadius:4,padding:"13px 15px",marginBottom:14}}>
+            <div style={{fontWeight:700,color:"#7d5f00",fontSize:12.5,marginBottom:5,
+              display:"flex",alignItems:"center",gap:6}}>
+              ⚠️ GeriScope NON è un dispositivo medico
+            </div>
+            <p style={{margin:0,color:"#555"}}>
+              GeriScope è uno <strong>strumento di supporto alla documentazione
+              clinica e organizzativa</strong>, destinato esclusivamente a professionisti
+              sanitari abilitati. Non è classificato come dispositivo medico ai sensi
+              del Regolamento UE 2017/745 (MDR) e non ha ottenuto marcatura CE
+              come dispositivo medico.
+            </p>
+          </div>
+          <div style={{background:"#fce8e8",border:"1.5px solid #c0392b",
+            borderRadius:4,padding:"13px 15px",marginBottom:14}}>
+            <div style={{fontWeight:700,color:"#922b21",fontSize:12.5,marginBottom:5,
+              display:"flex",alignItems:"center",gap:6}}>
+              🚫 Non sostituisce il giudizio clinico del medico
+            </div>
+            <p style={{margin:0,color:"#555"}}>
+              Nessun punteggio, indice prognostico o raccomandazione generata da
+              GeriScope — inclusi MMSE, MoCA, MPI, BRASS, CFS, report IA —
+              deve essere utilizzato come <strong>unico criterio per decisioni
+              diagnostiche, terapeutiche, prognostiche o di allocazione delle
+              risorse sanitarie</strong>. Ogni decisione clinica rimane di esclusiva
+              competenza e responsabilità del professionista sanitario.
+            </p>
+          </div>
+          <div style={{background:"#eaf4fb",border:"1.5px solid #2980b9",
+            borderRadius:4,padding:"13px 15px",marginBottom:14}}>
+            <div style={{fontWeight:700,color:"#1a5276",fontSize:12.5,marginBottom:5,
+              display:"flex",alignItems:"center",gap:6}}>
+              ℹ️ Limitazioni dello strumento
+            </div>
+            <ul style={{margin:0,paddingLeft:16,color:"#555"}}>
+              <li style={{marginBottom:4}}>
+                I <strong>report generati con IA</strong> hanno carattere puramente
+                orientativo e devono essere verificati e validati dal medico prima
+                di qualsiasi utilizzo clinico o documentale.
+              </li>
+              <li style={{marginBottom:4}}>
+                I <strong>dati sono conservati localmente nel browser</strong> (localStorage):
+                non viene garantita persistenza, sicurezza o conformità normativa
+                per l'archiviazione di dati sanitari sensibili. Non usare come
+                archivio ufficiale di documentazione clinica.
+              </li>
+              <li style={{marginBottom:4}}>
+                Gli <strong>indici prognostici</strong> (MPI, BRASS, CFS) forniscono
+                stime statistiche di popolazione, non previsioni individuali.
+              </li>
+              <li>
+                GeriScope è in <strong>versione beta</strong>: potrebbero essere
+                presenti imprecisioni. Segnalare anomalie agli sviluppatori.
+              </li>
+            </ul>
+          </div>
+          <div style={{background:"#eafaf1",border:"1.5px solid #27ae60",
+            borderRadius:4,padding:"13px 15px",marginBottom:14}}>
+            <div style={{fontWeight:700,color:"#1e8449",fontSize:12.5,marginBottom:5,
+              display:"flex",alignItems:"center",gap:6}}>
+              🔒 Privacy e GDPR
+            </div>
+            <p style={{margin:0,color:"#555"}}>
+              L'inserimento di dati identificativi di pazienti è <strong>responsabilità
+              esclusiva dell'operatore sanitario</strong>, che deve disporre di idonea
+              base giuridica ai sensi del GDPR (Reg. UE 2016/679) e del D.Lgs. 196/2003
+              e ss.mm.ii. Nella versione attuale GeriScope non trasmette dati a server
+              esterni.
+            </p>
+          </div>
+          <div style={{background:"#f4f4f4",border:"1px solid #ddd",
+            borderRadius:4,padding:"12px 15px",fontSize:11,color:"#777",marginBottom:6}}>
+            <strong style={{color:"#444"}}>Esclusione di responsabilità:</strong>{" "}
+            Gli sviluppatori di GeriScope declinano ogni responsabilità per danni
+            diretti o indiretti derivanti dall'uso dello strumento, inclusi errori
+            di calcolo o decisioni cliniche basate sui risultati generati.
+            L'uso di GeriScope implica l'accettazione integrale dei presenti termini.
+          </div>
+          <div style={{fontSize:9.5,color:"#bbb",textAlign:"center",marginTop:6,
+            fontFamily:"'DM Mono',monospace"}}>
+            {scrolled ? "✓ Testo letto — spuntare la casella per procedere" :
+              "↓ Scorrere fino in fondo per abilitare l'accettazione"}
+          </div>
+        </div>
+        <div style={{padding:"14px 26px",borderTop:"1px solid #eee",
+          background:"#fafafa",borderRadius:"0 0 6px 6px",flexShrink:0}}>
+          <label style={{display:"flex",alignItems:"flex-start",gap:9,
+            cursor:scrolled?"pointer":"default",marginBottom:12}}>
+            <input type="checkbox" checked={checked}
+              onChange={e=>setChecked(e.target.checked)}
+              disabled={!scrolled}
+              style={{marginTop:2,width:15,height:15,
+                accentColor:"#3d6b5e",flexShrink:0,
+                cursor:scrolled?"pointer":"not-allowed"}}/>
+            <span style={{fontSize:11.5,color:scrolled?"#222":"#aaa",lineHeight:1.55}}>
+              Ho letto e compreso le limitazioni di GeriScope. Sono un professionista
+              sanitario abilitato e utilizzo questo strumento esclusivamente a supporto
+              della documentazione clinica, nel rispetto del mio giudizio professionale
+              e della normativa vigente.
+            </span>
+          </label>
+          <button disabled={!checked||!scrolled} onClick={onAccept}
+            style={{width:"100%",padding:"11px",
+              background:checked&&scrolled?"#3d6b5e":"#ccc",
+              color:"white",border:"none",borderRadius:3,
+              cursor:checked&&scrolled?"pointer":"not-allowed",
+              fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",
+              transition:"background .2s"}}>
+            {!scrolled?"↓ Scorrere il testo per continuare":
+             !checked ?"☐ Spuntare la casella per continuare":
+                       "✓ Accetto — Accedi a GeriScope"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DisclaimerFooter(){
+  return(
+    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:9000,
+      background:"rgba(10,18,16,.88)",backdropFilter:"blur(4px)",
+      padding:"5px 20px",display:"flex",alignItems:"center",
+      justifyContent:"space-between",gap:16,flexShrink:0}}>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
+          stroke="#c9a84c" strokeWidth="2" strokeLinecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span style={{fontSize:10,color:"rgba(255,255,255,.55)",
+          fontFamily:"'DM Mono',monospace",letterSpacing:"0.04em"}}>
+          SOLO USO PROFESSIONALE · Non dispositivo medico (MDR 2017/745) ·
+          Non sostituisce il giudizio clinico · Dati locali, non certificati per archivio clinico ufficiale
+        </span>
+      </div>
+      <span style={{fontSize:9,color:"rgba(255,255,255,.25)",
+        fontFamily:"'DM Mono',monospace",whiteSpace:"nowrap",letterSpacing:"0.06em"}}>
+        GeriScope β
+      </span>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard/>);
+</script>
+</body>
+</html>
