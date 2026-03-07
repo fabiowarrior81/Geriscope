@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "routes": [
-    { "src": "/landing", "dest": "/landing.html" },
-    { "src": "/cga",     "dest": "/geriscope-cga-v2.html" },
-    { "src": "/app",     "dest": "/index.html" },
-    { "src": "/",        "dest": "/landing.html" }
-  ]
-}
