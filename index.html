@@ -1,1852 +1,735 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it" dir="ltr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>GeriScope — Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeriScope — La Valutazione Geriatrica Completa entra nel digitale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:#f7f4ee;color:#0d1614;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-:root{
-  --ink:#0d1614;--sage:#3d6b5e;--sage-lt:#5a9080;--sage-pale:#e8f0ed;
-  --gold:#c9a84c;--gold-lt:#e8c97a;--cream:#f7f4ee;--white:#ffffff;
-  --gray:#6b7b7e;--border:#d4ddd9;--red:#c0392b;--amber:#e67e22;--green:#27ae60;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#1a2820; --sage:#3d6b5e; --sage-lt:#5a9080; --sage-dk:#2a4d43;
+  --sage-pale:#eef4f1; --gold:#b8953a; --cream:#f7f2e8; --cream-dk:#ede6d6;
+  --warm-gray:#8a8278; --border:#d8d0c0; --white:#ffffff;
 }
-.serif{font-family:'Cormorant Garamond',Georgia,serif}
-.mono{font-family:'DM Mono',monospace}
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-track{background:var(--cream)}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.fu{animation:fadeUp .5s ease both}
-input,textarea,select{font-family:'DM Sans',sans-serif}
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--ink); overflow-x:hidden; }
+.serif { font-family:'Instrument Serif',Georgia,serif; }
+.mono  { font-family:'DM Mono',monospace; }
+
+/* LANG SWITCHER */
+#lang-switcher {
+  display:flex; gap:4px; flex-wrap:wrap;
+}
+.lang-btn {
+  background:none; border:none; cursor:pointer;
+  font-size:16px; padding:3px 5px; border-radius:4px;
+  opacity:.5; transition:opacity .15s, background .15s;
+  line-height:1;
+}
+.lang-btn:hover { opacity:.85; background:rgba(61,107,94,.08); }
+.lang-btn.active { opacity:1; background:rgba(61,107,94,.12); }
+
+/* NAV */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  padding:14px 48px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  background:rgba(247,242,232,.93); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.nav-brand-name { font-family:'Instrument Serif',Georgia,serif; font-size:19px; color:var(--ink); }
+.nav-brand-name em { color:var(--sage); font-style:italic; }
+.nav-brand-sub { font-family:'DM Mono',monospace; font-size:7px; color:var(--gold); letter-spacing:.14em; margin-top:1px; }
+.nav-center { display:flex; align-items:center; gap:28px; }
+.nav-link { font-size:12.5px; color:var(--warm-gray); text-decoration:none; letter-spacing:.02em; transition:color .2s; }
+.nav-link:hover { color:var(--ink); }
+.nav-right { display:flex; align-items:center; gap:14px; }
+.btn-nav { padding:8px 18px; background:var(--sage); color:#fff; border:none; border-radius:2px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; letter-spacing:.04em; text-decoration:none; transition:background .2s, transform .15s; display:inline-block; }
+.btn-nav:hover { background:var(--sage-dk); transform:translateY(-1px); }
+
+/* HERO */
+.hero { position:relative; min-height:100vh; display:grid; grid-template-columns:1fr 1fr; align-items:center; padding:120px 52px 80px; gap:64px; overflow:hidden; }
+.hero-bg-shape { position:absolute; top:-100px; right:-200px; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle,rgba(61,107,94,.08) 0%,transparent 70%); pointer-events:none; }
+.hero-bg-lines { position:absolute; inset:0; overflow:hidden; opacity:.4; pointer-events:none; background-image:linear-gradient(rgba(61,107,94,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(61,107,94,.06) 1px,transparent 1px); background-size:48px 48px; mask-image:radial-gradient(ellipse 60% 80% at 70% 50%,black 0%,transparent 100%); }
+.hero-left { position:relative; z-index:1; }
+.hero-eyebrow { display:inline-flex; align-items:center; gap:8px; padding:4px 12px; background:var(--sage-pale); border:1px solid rgba(61,107,94,.2); border-radius:20px; margin-bottom:28px; animation:fadeUp .7s ease both; }
+.hero-eyebrow span { font-family:'DM Mono',monospace; font-size:9px; color:var(--sage); letter-spacing:.1em; }
+.hero-eyebrow::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--sage-lt); animation:blink 2.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.hero h1 { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(38px,4.5vw,64px); font-weight:400; line-height:1.1; letter-spacing:-.01em; color:var(--ink); margin-bottom:10px; animation:fadeUp .7s .08s ease both; }
+.hero h1 strong { font-weight:700; }
+.hero h1 em { color:var(--sage); font-style:italic; }
+.hero-subtitle { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(16px,2vw,22px); font-style:italic; color:var(--warm-gray); margin-bottom:32px; animation:fadeUp .7s .16s ease both; }
+.hero-desc { font-size:14px; color:var(--warm-gray); line-height:1.85; max-width:460px; margin-bottom:40px; animation:fadeUp .7s .24s ease both; }
+.hero-actions { display:flex; gap:12px; flex-wrap:wrap; animation:fadeUp .7s .32s ease both; }
+.btn-primary { padding:13px 32px; background:var(--sage); color:#fff; border:none; border-radius:2px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:500; letter-spacing:.03em; text-decoration:none; transition:all .2s; display:inline-block; }
+.btn-primary:hover { background:var(--sage-dk); transform:translateY(-2px); box-shadow:0 10px 28px rgba(61,107,94,.25); }
+.btn-outline { padding:13px 28px; background:transparent; color:var(--sage); border:1.5px solid rgba(61,107,94,.35); border-radius:2px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; letter-spacing:.03em; text-decoration:none; transition:all .2s; display:inline-block; }
+.btn-outline:hover { border-color:var(--sage); background:var(--sage-pale); }
+.hero-stats { display:flex; gap:40px; margin-top:52px; padding-top:36px; border-top:1px solid var(--border); animation:fadeUp .7s .4s ease both; }
+.hero-stat .n { font-family:'Instrument Serif',Georgia,serif; font-size:36px; font-weight:400; color:var(--ink); line-height:1; }
+.hero-stat .n span { color:var(--sage); }
+.hero-stat .l { font-size:10px; color:var(--warm-gray); letter-spacing:.08em; text-transform:uppercase; font-family:'DM Mono',monospace; margin-top:5px; }
+
+/* MOCKUP */
+.hero-right { position:relative; z-index:1; animation:fadeUp .7s .2s ease both; }
+.mockup-shell { background:#fff; border:1px solid var(--border); border-radius:8px; box-shadow:0 24px 80px rgba(26,40,32,.12),0 4px 12px rgba(26,40,32,.06); overflow:hidden; }
+.mockup-bar { background:#f0ebe0; padding:9px 14px; display:flex; align-items:center; gap:7px; border-bottom:1px solid var(--border); }
+.mdot { width:9px; height:9px; border-radius:50%; }
+.mockup-addr { flex:1; margin:0 10px; background:#fff; border:1px solid var(--border); border-radius:3px; padding:3px 10px; font-family:'DM Mono',monospace; font-size:9.5px; color:var(--warm-gray); text-align:center; }
+.mockup-content { display:grid; grid-template-columns:190px 1fr; min-height:360px; }
+.mock-sidebar { background:var(--ink); padding:18px 14px; }
+.mock-logo-text { font-family:'Instrument Serif',Georgia,serif; font-size:16px; color:#fff; }
+.mock-logo-text em { color:#5a9080; font-style:italic; }
+.mock-org { font-family:'DM Mono',monospace; font-size:7px; color:rgba(255,255,255,.25); letter-spacing:.1em; padding-left:25px; margin-bottom:18px; }
+.mock-item { padding:7px 10px; border-radius:2px; font-size:11px; color:rgba(255,255,255,.35); display:flex; align-items:center; gap:8px; border-left:2px solid transparent; margin-bottom:2px; }
+.mock-item.on { background:rgba(61,107,94,.22); color:#fff; border-left-color:#5a9080; }
+.mock-main { padding:20px 22px; background:var(--cream); }
+.mock-title { font-family:'Instrument Serif',Georgia,serif; font-size:18px; color:var(--ink); margin-bottom:14px; }
+.mock-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+.mock-card { background:#fff; border:1px solid var(--border); border-radius:2px; padding:10px; }
+.mock-card .cv { font-family:'Instrument Serif',Georgia,serif; font-size:22px; color:var(--ink); }
+.mock-card .cl { font-size:8px; color:var(--warm-gray); letter-spacing:.06em; margin-top:2px; }
+.mock-table { background:#fff; border:1px solid var(--border); border-radius:2px; overflow:hidden; }
+.mock-thead { display:grid; grid-template-columns:1.8fr 1.4fr .7fr .9fr; padding:7px 12px; background:var(--cream-dk); border-bottom:1px solid var(--border); }
+.mock-thead span { font-size:7.5px; color:var(--warm-gray); letter-spacing:.08em; text-transform:uppercase; font-family:'DM Mono',monospace; }
+.mock-row { display:grid; grid-template-columns:1.8fr 1.4fr .7fr .9fr; padding:9px 12px; border-bottom:1px solid #f0ebe0; align-items:center; }
+.mock-row span { font-size:10px; color:var(--ink); }
+.mbadge { display:inline-block; padding:2px 6px; border-radius:8px; font-size:8px; font-weight:500; }
+
+/* DIVIDER */
+.divider-bar { background:var(--sage); padding:16px 52px; display:flex; align-items:center; gap:40px; flex-wrap:wrap; }
+.divider-item { display:flex; align-items:center; gap:10px; font-size:11.5px; color:rgba(255,255,255,.75); font-family:'DM Mono',monospace; letter-spacing:.05em; }
+.divider-item::before { content:'—'; color:rgba(255,255,255,.3); }
+
+/* SECTIONS */
+.section { padding:96px 52px; position:relative; z-index:1; }
+.section-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.14em; color:var(--sage); text-transform:uppercase; margin-bottom:14px; }
+.section-title { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(30px,4vw,50px); font-weight:400; line-height:1.1; margin-bottom:14px; }
+.section-title em { color:var(--sage); font-style:italic; }
+.section-desc { font-size:14px; color:var(--warm-gray); max-width:540px; line-height:1.85; margin-bottom:52px; }
+
+/* DOMAINS */
+.domains-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+.domain-card { background:#fff; padding:26px 24px 22px; transition:background .2s; }
+.domain-card:hover { background:var(--sage-pale); }
+.domain-icon { font-size:20px; margin-bottom:12px; }
+.domain-name { font-family:'Instrument Serif',Georgia,serif; font-size:19px; margin-bottom:6px; color:var(--ink); }
+.domain-note { font-size:12px; color:var(--warm-gray); line-height:1.65; margin-bottom:14px; }
+.domain-scales { display:flex; flex-wrap:wrap; gap:5px; }
+.scale-tag { font-family:'DM Mono',monospace; font-size:8.5px; letter-spacing:.05em; padding:3px 7px; background:var(--sage-pale); border:1px solid rgba(61,107,94,.2); border-radius:2px; color:var(--sage); }
+
+/* FEATURE ROWS */
+.feature-row { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; padding:72px 52px; border-top:1px solid var(--border); }
+.feature-row.flip .feature-visual { order:-1; }
+.feature-num { font-family:'Instrument Serif',Georgia,serif; font-size:80px; color:rgba(61,107,94,.1); line-height:1; margin-bottom:8px; }
+.feature-title { font-family:'Instrument Serif',Georgia,serif; font-size:28px; margin-bottom:12px; color:var(--ink); }
+.feature-desc { font-size:13.5px; color:var(--warm-gray); line-height:1.8; margin-bottom:20px; }
+.feature-list { display:flex; flex-direction:column; gap:8px; }
+.feature-list li { display:flex; align-items:flex-start; gap:10px; font-size:12.5px; color:var(--warm-gray); line-height:1.6; list-style:none; }
+.feature-list li::before { content:'✓'; color:var(--sage); font-weight:600; margin-top:1px; flex-shrink:0; }
+.feature-visual { background:#fff; border:1px solid var(--border); border-radius:6px; padding:26px; box-shadow:0 8px 32px rgba(26,40,32,.07); }
+.fv-label { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:.12em; color:var(--sage); text-transform:uppercase; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.ai-sect-head { font-family:'Instrument Serif',Georgia,serif; font-size:12px; color:var(--sage); letter-spacing:.06em; text-transform:uppercase; margin:12px 0 5px; }
+.ai-text { font-size:11.5px; color:var(--warm-gray); line-height:1.7; }
+.ai-scores { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+.ai-sc { background:var(--sage-pale); border:1px solid rgba(61,107,94,.15); border-radius:2px; padding:8px 12px; }
+.ai-sc .sv { font-family:'Instrument Serif',Georgia,serif; font-size:22px; color:var(--ink); }
+.ai-sc .sl { font-size:8.5px; color:var(--warm-gray); font-family:'DM Mono',monospace; letter-spacing:.05em; margin-top:2px; }
+.brand-preview { background:var(--ink); border-radius:4px; padding:14px 16px; margin-bottom:14px; }
+.brand-name { font-family:'Instrument Serif',Georgia,serif; font-size:16px; color:#fff; }
+.brand-name em { color:#5a9080; font-style:italic; }
+.brand-org { font-size:11px; color:rgba(255,255,255,.7); margin-top:5px; }
+.brand-dept { font-size:9px; color:rgba(255,255,255,.35); font-family:'DM Mono',monospace; letter-spacing:.06em; margin-top:2px; }
+.brand-inputs { display:flex; flex-direction:column; gap:8px; }
+.brand-input-label { font-size:9px; font-family:'DM Mono',monospace; color:var(--sage); letter-spacing:.06em; margin-bottom:2px; }
+.brand-input { border:1px solid var(--border); border-radius:2px; padding:7px 10px; font-size:12px; color:var(--sage); }
+.prog-list { display:flex; flex-direction:column; gap:10px; }
+.prog-item { display:flex; align-items:center; gap:10px; }
+.prog-label { font-size:11px; color:var(--ink); width:80px; flex-shrink:0; font-family:'DM Mono',monospace; }
+.prog-bar { flex:1; height:4px; background:var(--cream-dk); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; background:var(--sage); border-radius:2px; }
+.prog-pct { font-family:'DM Mono',monospace; font-size:9px; color:var(--warm-gray); width:28px; text-align:right; }
+
+/* STEPS */
+.steps-section { padding:96px 52px; background:var(--ink); position:relative; overflow:hidden; }
+.steps-bg { position:absolute; inset:0; opacity:.04; background-image:linear-gradient(rgba(90,144,128,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(90,144,128,.5) 1px,transparent 1px); background-size:52px 52px; }
+.steps-section .section-label { color:var(--sage-lt); }
+.steps-section .section-title { color:var(--cream); }
+.steps-section .section-title em { color:var(--sage-lt); }
+.steps-grid { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid rgba(255,255,255,.06); border-radius:4px; overflow:hidden; margin-top:52px; }
+.step { padding:32px 26px; border-right:1px solid rgba(255,255,255,.05); position:relative; }
+.step:last-child { border-right:none; }
+.step::after { content:attr(data-n); position:absolute; top:20px; right:20px; font-family:'Instrument Serif',Georgia,serif; font-size:44px; color:rgba(90,144,128,.12); line-height:1; }
+.step-icon { font-size:22px; margin-bottom:14px; }
+.step-title { font-family:'Instrument Serif',Georgia,serif; font-size:18px; color:var(--cream); margin-bottom:8px; }
+.step-desc { font-size:12px; color:rgba(255,255,255,.4); line-height:1.7; }
+
+/* COMPLIANCE */
+.compliance-section { padding:64px 52px; background:var(--cream-dk); border-top:1px solid var(--border); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:64px; flex-wrap:wrap; }
+.compliance-left { flex:1; min-width:260px; }
+.compliance-left h3 { font-family:'Instrument Serif',Georgia,serif; font-size:24px; color:var(--ink); margin-bottom:6px; }
+.compliance-left p { font-size:12.5px; color:var(--warm-gray); line-height:1.7; max-width:380px; }
+.compliance-right { display:flex; flex-direction:column; gap:10px; }
+.compliance-item { display:flex; align-items:flex-start; gap:10px; font-size:11.5px; color:var(--warm-gray); font-family:'DM Mono',monospace; letter-spacing:.04em; }
+.compliance-item::before { content:'✓'; color:var(--sage); font-size:13px; font-weight:bold; flex-shrink:0; }
+
+/* CTA */
+.cta-section { padding:120px 52px; text-align:center; position:relative; overflow:hidden; }
+.cta-bg { position:absolute; inset:0; background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(61,107,94,.07) 0%,transparent 70%); }
+.cta-section h2 { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(34px,5vw,60px); line-height:1.1; margin-bottom:16px; }
+.cta-section h2 em { color:var(--sage); font-style:italic; }
+.cta-section p { font-size:14px; color:var(--warm-gray); max-width:420px; margin:0 auto 36px; line-height:1.8; }
+.cta-note { font-size:10.5px; color:var(--warm-gray); margin-top:14px; font-family:'DM Mono',monospace; letter-spacing:.06em; }
+
+/* FOOTER */
+footer { background:var(--ink); padding:48px 52px; display:grid; grid-template-columns:1fr auto auto; align-items:end; gap:40px; }
+.footer-brand-name { font-family:'Instrument Serif',Georgia,serif; font-size:18px; color:rgba(255,255,255,.5); }
+.footer-brand-name em { color:var(--sage-lt); font-style:italic; }
+.footer-copy { font-size:9.5px; color:rgba(255,255,255,.2); font-family:'DM Mono',monospace; letter-spacing:.04em; margin-top:6px; line-height:1.7; }
+.footer-links { display:flex; gap:24px; align-items:center; }
+.footer-links a { font-size:11px; color:rgba(255,255,255,.3); text-decoration:none; font-family:'DM Mono',monospace; letter-spacing:.04em; transition:color .2s; }
+.footer-links a:hover { color:var(--sage-lt); }
+.footer-disc { font-size:9px; color:rgba(255,255,255,.15); font-family:'DM Mono',monospace; letter-spacing:.04em; max-width:260px; line-height:1.6; text-align:right; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+.reveal { opacity:0; transform:translateY(22px); transition:opacity .65s ease,transform .65s ease; }
+.reveal.visible { opacity:1; transform:none; }
+
+/* RTL support */
+html[dir="rtl"] { --text-align: right; }
+html[dir="rtl"] .hero-bg-shape { right:auto; left:-200px; }
+html[dir="rtl"] .feature-row.flip .feature-visual { order:1; }
+html[dir="rtl"] .feature-list li::before { margin-right:0; }
+html[dir="rtl"] .footer-disc { text-align:left; }
+html[dir="rtl"] .divider-item::before { display:none; }
+html[dir="rtl"] .compliance-item::before { margin-left:0; }
+
+@media(max-width:900px){
+  nav { padding:12px 20px; }
+  .nav-center { display:none; }
+  .hero { grid-template-columns:1fr; padding:100px 20px 60px; gap:32px; }
+  .hero-right { display:none; }
+  .domains-grid { grid-template-columns:1fr; }
+  .feature-row, .feature-row.flip { grid-template-columns:1fr; gap:28px; padding:48px 20px; }
+  .feature-row.flip .feature-visual { order:0; }
+  .steps-grid { grid-template-columns:1fr 1fr; }
+  .section, .steps-section, .cta-section { padding:60px 20px; }
+  .compliance-section { padding:44px 20px; gap:28px; }
+  .divider-bar { padding:14px 20px; gap:20px; }
+  footer { grid-template-columns:1fr; padding:32px 20px; }
+  .footer-disc { text-align:left; }
+  #lang-switcher .lang-btn { font-size:18px; }
+}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const {useState,useEffect,useRef} = React;
 
-// ── Seed data ─────────────────────────────────────────────────────────────
-const SEED_PATIENTS = [
-  {id:"p1",firstName:"Mario",lastName:"Rossi",dob:"1946-03-12",gender:"M",
-   ward:"Inpatients",physician:"Dr. Greco",admissionDate:"2025-02-10",
-   diagnoses:["Hypertension","Type 2 Diabetes","Mild cognitive impairment"],
-   medications:["Warfarin","Amiodarone","Diazepam","Metformin","Amlodipine"],
-   cfs:4,lastCGA:"2025-02-12",cgaStatus:"complete",
-   scores:{mmse:22,adl:4,iadl:3,mna:21,gds:8},
-   alerts:2},
-  {id:"p2",firstName:"Anna",lastName:"Bianchi",dob:"1939-07-28",gender:"F",
-   ward:"Inpatients",physician:"Dr. Russo",admissionDate:"2025-02-14",
-   diagnoses:["Atrial fibrillation","Osteoporosis","Depression"],
-   medications:["Aspirin","Lorazepam","Omeprazole","Furosemide"],
-   cfs:5,lastCGA:"2025-02-15",cgaStatus:"complete",
-   scores:{mmse:19,adl:3,iadl:2,mna:18,gds:12},
-   alerts:1},
-  {id:"p3",firstName:"Giuseppe",lastName:"Ferrari",dob:"1942-11-05",gender:"M",
-   ward:"Inpatients",physician:"Dr. Greco",admissionDate:"2025-02-16",
-   diagnoses:["Heart failure","COPD","Malnutrition"],
-   medications:["Digoxin","Spironolactone","Salbutamol","Prednisone"],
-   cfs:6,lastCGA:null,cgaStatus:"pending",
-   scores:{},
-   alerts:1},
-  {id:"p4",firstName:"Lucia",lastName:"Conti",dob:"1950-05-19",gender:"F",
-   ward:"Inpatients",physician:"Dr. Esposito",admissionDate:"2025-02-17",
-   diagnoses:["Hip fracture","Hypertension"],
-   medications:["Metoprolol","Calcium","Vitamin D","Tramadol"],
-   cfs:3,lastCGA:"2025-02-18",cgaStatus:"in_progress",
-   scores:{mmse:27,adl:5},
-   alerts:0},
-  {id:"p5",firstName:"Roberto",lastName:"Marino",dob:"1937-09-30",gender:"M",
-   ward:"Inpatients",physician:"Dr. Russo",admissionDate:"2025-02-18",
-   diagnoses:["Dementia","Hypertension","Urinary incontinence"],
-   medications:["Donepezil","Quetiapine","Hydrochlorothiazide","Nitrazepam"],
-   cfs:7,lastCGA:null,cgaStatus:"pending",
-   scores:{},
-   alerts:3},
-];
+<!-- i18n engine -->
+<script>
+// GeriScope — i18n translations
+// Languages: it, en, zh, fr, es, de, ar, ja, pt
+const GERISCOPE_I18N = {
 
-// ── Helpers ───────────────────────────────────────────────────────────────
-function getAge(dob){
-  const b=new Date(dob), n=new Date();
-  let a=n.getFullYear()-b.getFullYear();
-  if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate())) a--;
-  return a;
-}
-
-function cfsBadge(cfs,T){
-  const _T=T||(DASH_TRANS[getDashLang()]||DASH_TRANS.it);
-  if(cfs<=2) return {label:_T.cfsFit,color:"var(--green)",bg:"rgba(39,174,96,.12)"};
-  if(cfs<=4) return {label:_T.cfsVulnerable,color:"var(--amber)",bg:"rgba(230,126,34,.12)"};
-  if(cfs<=6) return {label:_T.cfsFrail,color:"var(--red)",bg:"rgba(192,57,43,.12)"};
-  return {label:_T.cfsSevere,color:"var(--red)",bg:"rgba(192,57,43,.2)"};
-}
-
-function cgaStatusBadge(s,T){
-  const _T=T||(DASH_TRANS[getDashLang()]||DASH_TRANS.it);
-  if(s==="complete")    return {label:_T.cgaComplete,   color:"var(--green)", bg:"rgba(39,174,96,.1)"};
-  if(s==="in_progress") return {label:_T.cgaInProgress, color:"var(--amber)", bg:"rgba(230,126,34,.1)"};
-  return                       {label:_T.cgaPending,    color:"var(--gray)",  bg:"rgba(107,123,126,.1)"};
-}
-
-function initPatients(){
-  const saved=localStorage.getItem("gs_patients");
-  if(saved) return JSON.parse(saved);
-  localStorage.setItem("gs_patients",JSON.stringify(SEED_PATIENTS));
-  return SEED_PATIENTS;
-}
-
-function savePatients(pts){
-  localStorage.setItem("gs_patients",JSON.stringify(pts));
-}
-
-// ── Sidebar ───────────────────────────────────────────────────────────────
-function Sidebar({active,setActive,branding={}}){
-  const nav=[
-    {id:"dashboard", icon:"⊡", label:"Dashboard"},
-    {id:"patients",  icon:"◎", label:"Patients"},
-    {id:"cga",       icon:"◈", label:"CGA Modules"},
-    {id:"reports",   icon:"◇", label:"Reports"},
-    {id:"settings",  icon:"◉", label:"Settings"},
-  ];
-  return(
-    <aside style={{width:220,background:"var(--ink)",display:"flex",flexDirection:"column",
-      height:"100vh",position:"fixed",top:0,left:0,zIndex:50}}>
-      {/* Logo */}
-      <div style={{padding:"28px 24px 20px",borderBottom:"1px solid rgba(255,255,255,.07)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <svg viewBox="0 0 22 22" style={{width:20,height:20}}>
-            <circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(90,144,128,.5)" strokeWidth="1"/>
-            <circle cx="11" cy="11" r="5.5" fill="none" stroke="rgba(90,144,128,.7)" strokeWidth=".8"/>
-            <circle cx="11" cy="11" r="2" fill="var(--sage-lt)"/>
-            <line x1="1.5" y1="11" x2="20.5" y2="11" stroke="rgba(90,144,128,.3)" strokeWidth=".6"/>
-            <line x1="11" y1="1.5" x2="11" y2="20.5" stroke="rgba(90,144,128,.3)" strokeWidth=".6"/>
-          </svg>
-          <span className="serif" style={{fontSize:20,fontWeight:600,color:"var(--white)",letterSpacing:"-0.02em"}}>
-            Geri<span style={{color:"var(--sage-lt)",fontStyle:"italic"}}>Scope</span>
-          </span>
-        </div>
-        <div className="mono" style={{fontSize:8,color:"var(--gold)",letterSpacing:"0.12em",marginTop:4,marginLeft:28}}>
-          CGA PLATFORM
-        </div>
-        {(branding.orgName||branding.orgSub)&&(
-          <div style={{marginTop:8,marginLeft:28,borderTop:"1px solid rgba(255,255,255,.07)",paddingTop:8}}>
-            {branding.orgName&&<div style={{fontSize:11,fontWeight:600,color:"rgba(255,255,255,.85)",lineHeight:1.3}}>{branding.orgName}</div>}
-            {branding.orgSub&&<div style={{fontSize:9,color:"rgba(255,255,255,.4)",marginTop:2,letterSpacing:"0.04em"}}>{branding.orgSub}</div>}
-          </div>
-        )}
-      </div>
-
-      {/* Nav */}
-      <nav style={{flex:1,padding:"16px 12px",display:"flex",flexDirection:"column",gap:2}}>
-        {nav.map(n=>{
-          const isActive=active===n.id;
-          return(
-            <button key={n.id} onClick={()=>setActive(n.id)}
-              style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",
-                borderRadius:3,border:"none",cursor:"pointer",textAlign:"left",width:"100%",
-                background:isActive?"rgba(61,107,94,.25)":"transparent",
-                color:isActive?"var(--white)":"rgba(255,255,255,.4)",
-                transition:"all .2s",
-                borderLeft:isActive?"2px solid var(--sage-lt)":"2px solid transparent"}}>
-              <span style={{fontSize:14,opacity:isActive?1:.6}}>{n.icon}</span>
-              <span style={{fontSize:13,fontWeight:isActive?500:400,letterSpacing:"0.01em"}}>{n.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* User */}
-      <div style={{padding:"16px 20px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:32,height:32,borderRadius:"50%",
-            background:"rgba(61,107,94,.3)",border:"1px solid rgba(61,107,94,.5)",
-            display:"flex",alignItems:"center",justifyContent:"center",
-            fontSize:12,fontWeight:600,color:"var(--sage-lt)"}}>
-            {(branding.physicianName||"Dr. M. Greco").split(" ").filter(w=>/^[A-Z]/.test(w)).slice(-2).map(w=>w[0]).join("") || "MG"}
-          </div>
-          <div>
-            <div style={{fontSize:12,fontWeight:500,color:"var(--white)"}}>{branding.physicianName||"Dr. M. Greco"}</div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,.35)"}}>{branding.physicianRole||"Geriatrics Unit"}</div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-// ── Stat card ─────────────────────────────────────────────────────────────
-function StatCard({label,value,sub,color,icon}){
-  return(
-    <div style={{background:"var(--white)",border:"1px solid var(--border)",
-      padding:"24px 28px",borderRadius:3,position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:0,left:0,right:0,height:2,
-        background:`linear-gradient(90deg,${color},transparent)`}}/>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div>
-          <div className="mono" style={{fontSize:10,color:"var(--gray)",letterSpacing:"0.1em",
-            textTransform:"uppercase",marginBottom:8}}>{label}</div>
-          <div className="serif" style={{fontSize:36,fontWeight:300,color:"var(--ink)",lineHeight:1}}>{value}</div>
-          {sub&&<div style={{fontSize:11,color:"var(--gray)",marginTop:6}}>{sub}</div>}
-        </div>
-        <div style={{fontSize:22,opacity:.4}}>{icon}</div>
-      </div>
-    </div>
-  );
-}
-
-// ── Patient row ───────────────────────────────────────────────────────────
-function PatientRow({p,onSelect,delay=0}){
-  const [hov,setHov]=useState(false);
-  const cfs=cfsBadge(p.cfs,_T);
-  const cga=cgaStatusBadge(p.cgaStatus,_T);
-  const age=getAge(p.dob);
-
-  return(
-    <tr onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      onClick={()=>onSelect(p)}
-      style={{cursor:"pointer",background:hov?"var(--sage-pale)":"var(--white)",
-        transition:"background .2s",animation:`fadeUp .4s ${delay}ms ease both`}}>
-
-      {/* Patient */}
-      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{width:36,height:36,borderRadius:"50%",flexShrink:0,
-            background:"var(--sage-pale)",border:"1.5px solid var(--border)",
-            display:"flex",alignItems:"center",justifyContent:"center",
-            fontSize:12,fontWeight:600,color:"var(--sage)"}}>
-            {p.firstName[0]}{p.lastName[0]}
-          </div>
-          <div>
-            <div style={{fontSize:14,fontWeight:500}}>{p.lastName}, {p.firstName}</div>
-            <div className="mono" style={{fontSize:10,color:"var(--gray)",marginTop:1}}>
-              {age}y · {p.gender} · {p.ward}
-            </div>
-          </div>
-        </div>
-      </td>
-
-      {/* Diagnoses */}
-      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
-        <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
-          {p.diagnoses.slice(0,2).map(d=>(
-            <span key={d} style={{fontSize:10,padding:"2px 7px",borderRadius:2,
-              background:"rgba(107,123,126,.1)",color:"var(--gray)",letterSpacing:"0.02em"}}>{d}</span>
-          ))}
-          {p.diagnoses.length>2&&(
-            <span style={{fontSize:10,color:"var(--gray)"}}>+{p.diagnoses.length-2}</span>
-          )}
-        </div>
-      </td>
-
-      {/* CFS */}
-      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,
-          background:cfs.bg,padding:"3px 10px",borderRadius:20}}>
-          <span className="mono" style={{fontSize:11,fontWeight:600,color:cfs.color}}>{p.cfs}</span>
-          <span style={{fontSize:11,color:cfs.color}}>{cfs.label}</span>
-        </div>
-      </td>
-
-      {/* CGA status */}
-      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
-        <span style={{fontSize:11,padding:"3px 10px",borderRadius:20,
-          background:cga.bg,color:cga.color}}>{cga.label}</span>
-      </td>
-
-      {/* Alerts */}
-      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)"}}>
-        {p.alerts>0?(
-          <div style={{display:"inline-flex",alignItems:"center",gap:5,
-            background:"rgba(192,57,43,.1)",padding:"3px 10px",borderRadius:20}}>
-            <span style={{fontSize:11,animation:"pulse 2s ease-in-out infinite",
-              color:"var(--red)"}}>⚠</span>
-            <span className="mono" style={{fontSize:11,color:"var(--red)",fontWeight:600}}>
-              {p.alerts} Beers
-            </span>
-          </div>
-        ):(
-          <span style={{fontSize:11,color:"var(--gray)"}}>—</span>
-        )}
-      </td>
-
-      {/* Action */}
-      <td style={{padding:"14px 20px",borderBottom:"1px solid var(--border)",textAlign:"right"}}>
-        <button style={{fontSize:11,fontWeight:500,color:"var(--sage)",
-          background:"transparent",border:"1px solid var(--border)",
-          padding:"5px 14px",borderRadius:2,cursor:"pointer",
-          fontFamily:"'DM Sans',sans-serif",
-          transition:"all .2s",
-          ...(hov?{background:"var(--sage)",color:"var(--white)",borderColor:"var(--sage)"}:{})}}>
-          {_T.openCGA} →
-        </button>
-      </td>
-    </tr>
-  );
-}
-
-// ── New Patient Modal ─────────────────────────────────────────────────────
-function NewPatientModal({onClose,onSave,tFn}){
-  const _T=tFn||(DASH_TRANS[getDashLang()]||DASH_TRANS.it);
-  const [form,setForm]=useState({
-    firstName:"",lastName:"",dob:"",gender:"M",
-    ward:"Inpatients",physician:"Dr. Greco",
-    diagnoses:"",medications:"",
-  });
-  const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
-
-  function handleSave(){
-    if(!form.firstName||!form.lastName||!form.dob) return;
-    const newPt={
-      id:"p"+Date.now(),
-      firstName:form.firstName,lastName:form.lastName,
-      dob:form.dob,gender:form.gender,
-      ward:form.ward,physician:form.physician,
-      admissionDate:new Date().toISOString().split("T")[0],
-      diagnoses:form.diagnoses?form.diagnoses.split(",").map(s=>s.trim()).filter(Boolean):[],
-      medications:form.medications?form.medications.split(",").map(s=>s.trim()).filter(Boolean):[],
-      cfs:null,lastCGA:null,cgaStatus:"pending",scores:{},alerts:0,
-    };
-    onSave(newPt);
-  }
-
-  const fields=[
-    {label:"First Name *",k:"firstName",type:"text",half:true},
-    {label:"Last Name *",k:"lastName",type:"text",half:true},
-    {label:"Date of Birth *",k:"dob",type:"date",half:true},
-    {label:"Gender",k:"gender",type:"select",opts:[["M","Male"],["F","Female"]],half:true},
-    {label:"Ward",k:"ward",type:"select",opts:[["Inpatients","Inpatients"],["Outpatients","Outpatients"]],half:true},
-    {label:"Referring Physician",k:"physician",type:"text",half:true},
-    {label:"Diagnoses (comma-separated)",k:"diagnoses",type:"text",half:false},
-    {label:"Current Medications (comma-separated)",k:"medications",type:"text",half:false},
-  ];
-
-  const inputStyle={
-    width:"100%",padding:"9px 12px",
-    border:"1px solid var(--border)",borderRadius:2,
-    fontSize:13,background:"var(--cream)",color:"var(--ink)",
-    fontFamily:"'DM Sans',sans-serif",outline:"none",
-    transition:"border .2s",
-  };
-
-  return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",
-      display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,
-      backdropFilter:"blur(4px)"}}>
-      <div style={{background:"var(--white)",width:"100%",maxWidth:580,
-        borderRadius:4,overflow:"hidden",
-        boxShadow:"0 24px 60px rgba(0,0,0,.2)",
-        animation:"slideIn .3s ease"}}>
-
-        {/* Header */}
-        <div style={{padding:"24px 28px",borderBottom:"1px solid var(--border)",
-          display:"flex",justifyContent:"space-between",alignItems:"center",
-          background:"var(--ink)"}}>
-          <div>
-            <div className="serif" style={{fontSize:22,fontWeight:600,color:"var(--white)"}}>
-              New Patient
-            </div>
-            <div className="mono" style={{fontSize:10,color:"rgba(255,255,255,.35)",
-              marginTop:3,letterSpacing:"0.08em"}}>REGISTER · GERISCOPE CGA</div>
-          </div>
-          <button onClick={onClose} style={{background:"rgba(255,255,255,.1)",border:"none",
-            color:"white",width:32,height:32,borderRadius:"50%",cursor:"pointer",
-            fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-        </div>
-
-        {/* Form */}
-        <div style={{padding:"28px",display:"flex",flexWrap:"wrap",gap:16}}>
-          {fields.map(f=>(
-            <div key={f.k} style={{width:f.half?"calc(50% - 8px)":"100%"}}>
-              <label style={{fontSize:11,fontWeight:500,color:"var(--gray)",
-                letterSpacing:"0.04em",display:"block",marginBottom:5}}>
-                {f.label}
-              </label>
-              {f.type==="select"?(
-                <select value={form[f.k]} onChange={set(f.k)} style={inputStyle}>
-                  {f.opts.map(([v,l])=><option key={v} value={v}>{l}</option>)}
-                </select>
-              ):(
-                <input type={f.type} value={form[f.k]} onChange={set(f.k)}
-                  style={inputStyle}
-                  onFocus={e=>e.target.style.borderColor="var(--sage)"}
-                  onBlur={e=>e.target.style.borderColor="var(--border)"}/>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <div style={{padding:"16px 28px",borderTop:"1px solid var(--border)",
-          display:"flex",justifyContent:"flex-end",gap:10,background:"var(--cream)"}}>
-          <button onClick={onClose}
-            style={{padding:"9px 24px",border:"1px solid var(--border)",
-              background:"transparent",borderRadius:2,cursor:"pointer",
-              fontSize:13,color:"var(--gray)",fontFamily:"'DM Sans',sans-serif"}}>
-            Cancel
-          </button>
-          <button onClick={handleSave}
-            style={{padding:"9px 24px",border:"none",
-              background:"var(--sage)",color:"var(--white)",borderRadius:2,cursor:"pointer",
-              fontSize:13,fontWeight:500,fontFamily:"'DM Sans',sans-serif",
-              transition:"background .2s"}}
-            onMouseEnter={e=>{e.target.style.background="var(--ink)";}}
-            onMouseLeave={e=>{e.target.style.background="var(--sage)";}}>
-            Register Patient →
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Dashboard ─────────────────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════════════
-// SETTINGS PANEL — Personalizzazione branding
-// ══════════════════════════════════════════════════════════════════════════
-function SettingsPanel({branding, onSave}){
-  const [form, setForm] = React.useState({...branding});
-  const [saved, setSaved] = React.useState(false);
-
-  function handleSave(){
-    onSave(form);
-    setSaved(true);
-    setTimeout(()=>setSaved(false), 2500);
-  }
-
-  const iS = {
-    width:"100%", padding:"10px 14px",
-    border:"1px solid var(--border)", borderRadius:2,
-    fontSize:13, background:"var(--white)", color:"var(--ink)",
-    fontFamily:"'DM Sans',sans-serif", outline:"none",
-  };
-  const labelS = {
-    fontSize:11, color:"var(--gray)", display:"block", marginBottom:5, fontWeight:500,
-  };
-
-  return(
-    <div className="fu">
-
-      {/* Live preview */}
-      <div style={{background:"var(--ink)",borderRadius:3,padding:"20px 24px",
-        marginBottom:28,display:"flex",alignItems:"center",gap:16}}>
-        <svg viewBox="0 0 22 22" style={{width:22,height:22,flexShrink:0}}>
-          <circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(90,144,128,.5)" strokeWidth="1"/>
-          <circle cx="11" cy="11" r="5.5" fill="none" stroke="rgba(90,144,128,.7)" strokeWidth=".8"/>
-          <circle cx="11" cy="11" r="2" fill="var(--sage-lt)"/>
-          <line x1="1.5" y1="11" x2="20.5" y2="11" stroke="rgba(90,144,128,.3)" strokeWidth=".6"/>
-          <line x1="11" y1="1.5" x2="11" y2="20.5" stroke="rgba(90,144,128,.3)" strokeWidth=".6"/>
-        </svg>
-        <div>
-          <div style={{display:"flex",alignItems:"baseline",gap:10}}>
-            <span className="serif" style={{fontSize:20,fontWeight:600,color:"white",letterSpacing:"-0.02em"}}>
-              Geri<span style={{color:"var(--sage-lt)",fontStyle:"italic"}}>Scope</span>
-            </span>
-            {form.orgName&&(
-              <span style={{fontSize:12,color:"var(--gold)",fontWeight:500}}>
-                · {form.orgName}
-              </span>
-            )}
-          </div>
-          {form.orgSub&&(
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",
-              fontFamily:"'DM Mono',monospace",letterSpacing:"0.06em",marginTop:2}}>
-              {form.orgSub.toUpperCase()}
-            </div>
-          )}
-          {form.physicianName&&(
-            <div style={{marginTop:8,display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:26,height:26,borderRadius:"50%",
-                background:"rgba(61,107,94,.4)",border:"1px solid rgba(61,107,94,.6)",
-                display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:10,fontWeight:700,color:"var(--sage-lt)"}}>
-                {(form.physicianName).split(" ").filter(w=>/^[A-Z]/.test(w)).slice(-2).map(w=>w[0]).join("")||"??"}
-              </div>
-              <div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.8)",fontWeight:500}}>{form.physicianName}</div>
-                {form.physicianRole&&<div style={{fontSize:9,color:"rgba(255,255,255,.35)"}}>{form.physicianRole}</div>}
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="mono" style={{marginLeft:"auto",fontSize:8,color:"rgba(255,255,255,.2)",
-          letterSpacing:"0.1em"}}>ANTEPRIMA</div>
-      </div>
-
-      {/* Form */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24,maxWidth:780}}>
-
-        {/* Struttura */}
-        <div style={{background:"var(--white)",border:"1px solid var(--border)",
-          borderRadius:3,padding:"20px"}}>
-          <div className="mono" style={{fontSize:9,color:"var(--sage)",letterSpacing:"0.1em",
-            textTransform:"uppercase",marginBottom:16}}>Struttura / Organizzazione</div>
-
-          <div style={{marginBottom:14}}>
-            <label style={labelS}>{_T.orgLabel}</label>
-            <input type="text" value={form.orgName||""}
-              onChange={e=>setForm(f=>({...f,orgName:e.target.value}))}
-              placeholder={_T.orgPlaceholder}
-              style={iS}
-              onFocus={e=>e.target.style.borderColor="var(--sage)"}
-              onBlur={e=>e.target.style.borderColor="var(--border)"}/>
-          </div>
-
-          <div>
-            <label style={labelS}>{_T.subLabel}</label>
-            <input type="text" value={form.orgSub||""}
-              onChange={e=>setForm(f=>({...f,orgSub:e.target.value}))}
-              placeholder={_T.subPlaceholder}
-              style={iS}
-              onFocus={e=>e.target.style.borderColor="var(--sage)"}
-              onBlur={e=>e.target.style.borderColor="var(--border)"}/>
-          </div>
-        </div>
-
-        {/* Sanitario */}
-        <div style={{background:"var(--white)",border:"1px solid var(--border)",
-          borderRadius:3,padding:"20px"}}>
-          <div className="mono" style={{fontSize:9,color:"var(--sage)",letterSpacing:"0.1em",
-            textTransform:"uppercase",marginBottom:16}}>Sanitario Responsabile</div>
-
-          <div style={{marginBottom:14}}>
-            <label style={labelS}>{_T.phyLabel}</label>
-            <input type="text" value={form.physicianName||""}
-              onChange={e=>setForm(f=>({...f,physicianName:e.target.value}))}
-              placeholder={_T.phyPlaceholder}
-              style={iS}
-              onFocus={e=>e.target.style.borderColor="var(--sage)"}
-              onBlur={e=>e.target.style.borderColor="var(--border)"}/>
-          </div>
-
-          <div>
-            <label style={labelS}>{_T.roleLabel}</label>
-            <input type="text" value={form.physicianRole||""}
-              onChange={e=>setForm(f=>({...f,physicianRole:e.target.value}))}
-              placeholder="es. Geriatra, Medico Internista, MMG..."
-              style={iS}
-              onFocus={e=>e.target.style.borderColor="var(--sage)"}
-              onBlur={e=>e.target.style.borderColor="var(--border)"}/>
-          </div>
-        </div>
-      </div>
-
-      {/* Save button */}
-      <div style={{marginTop:24,display:"flex",alignItems:"center",gap:14,maxWidth:780}}>
-        <button onClick={handleSave}
-          style={{padding:"11px 32px",
-            background:saved?"var(--green)":"var(--sage)",
-            color:"white",border:"none",borderRadius:2,cursor:"pointer",
-            fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",
-            transition:"background .3s",minWidth:180}}>
-          {saved ? "✓ Salvato!" : "Salva personalizzazione"}
-        </button>
-        <div style={{fontSize:11,color:"var(--gray)"}}>
-          Le impostazioni sono salvate nel browser e applicate a tutte le sessioni future.
-        </div>
-      </div>
-
-      {/* Info box */}
-      <div style={{marginTop:28,background:"rgba(201,168,76,.07)",
-        border:"1px solid rgba(201,168,76,.2)",borderRadius:3,
-        padding:"14px 18px",maxWidth:780}}>
-        <div className="mono" style={{fontSize:8.5,color:"var(--gold)",
-          letterSpacing:"0.08em",marginBottom:6}}>DOVE COMPARE IL BRANDING</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,fontSize:11,color:"var(--gray)"}}>
-          {[
-            "Sidebar della dashboard (sotto il logo)",
-            "Barra superiore della dashboard",
-            "Area utente in fondo alla sidebar",
-            "Modulo VMG — intestazione laterale",
-            "Report PDF stampato del paziente",
-            "Schede di somministrazione dei test",
-          ].map((item,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{color:"var(--sage)",fontWeight:700}}>✓</span> {item}
-            </div>
-          ))}
-        </div>
-      </div>
-
-    </div>
-  );
-}
-
-
-
-// ── i18n translations (dashboard) ─────────────────────────────────────────
-const DASH_TRANS = {
-  it:{ lang:"it", dir:"ltr",
-    pageTitle:"Patient Dashboard", settings:"Impostazioni",
-    newPatient:"+ Nuovo Paziente", preview:_T.preview,
-    searchPlaceholder:"Cerca per nome o diagnosi...",
-    allCGA:"Tutti (CGA)", allWards:"Tutti",
-    statTotal:"Pazienti Totali", statTotalSub:"Attualmente ricoverati",
-    statPending:"VMG in Attesa", statPendingSub:"Valutazione richiesta",
-    statAlerts:"Beers Alert", statAlertsSub:"Revisione farmaci",
-    statFrail:"Fragili / Gran Fragili", statFrailSub:"CFS ≥ 5",
-    beersAlert:"avvisi Beers",
-    thPatient:"Paziente", thDiagnoses:"Diagnosi",
-    thCFS:"Fragilità (CFS)", thCGA:"Stato VMG",
-    thBeers:"Beers Alert",
-    cgaPending:"In Attesa", cgaInProgress:"In Corso", cgaComplete:"Completa",
-    cfsFit:"In Forma", cfsVulnerable:"Vulnerabile",
-    cfsFrail:"Fragile", cfsSevere:"Gran Fragile",
-    noPatients:"Nessun paziente trovato.",
-    ofPatients:"di", patients:"pazienti",
-    dataFooter:"Dati salvati localmente · GeriScope CGA Platform v2.0",
-    openCGA:"Apri VMG", viewDiary:"Diario",
-    orgSection:{_T.orgSection},
-    phySection:{_T.phySection},
-    orgLabel:"Nome ospedale / studio / struttura",
-    orgPlaceholder:"es. Ospedale S. Giovanni...",
-    subLabel:"Reparto / Specializzazione (opzionale)",
-    subPlaceholder:"es. U.O. Geriatria...",
-    phyLabel:"Nome e cognome",
-    phyPlaceholder:"es. Dr. Mario Rossi",
-    roleLabel:"Qualifica / Ruolo",
-    rolePlaceholder:"es. Geriatra, Medico Internista...",
-    saveBtn:_T.saveBtn, savedBtn:_T.savedBtn,
-    modalTitle:_T.modalTitle,
-    fnLabel:"Nome", lnLabel:"Cognome",
-    dobLabel:"Data di nascita", wardLabel:"Reparto",
-    diagLabel:"Diagnosi (una per riga)", medsLabel:"Farmaci (uno per riga)",
-    cfsTip:"Scala di Fragilità Clinica (CFS) — Facoltativo",
-    savePatient:"Salva Paziente", cancel:"Annulla",
-    diaryTypes:["Visita ambulatoriale","Contatto telefonico","Nota clinica","Aggiornamento terapia","Consulenza specialistica","Rivalutazione VMG","Dimissione / Ricovero","Colloquio familiare","Procedura / Esame"],
-    activeDiagnoses:_T.activeDiagnoses, medications:"Farmaci",
-    beersWarning:"Attenzione Beers Criteria",
-    alerts:"avvisi",
+  // ── META ──────────────────────────────────────────────────────────────────
+  meta: {
+    it: { title:"GeriScope — La Valutazione Geriatrica Completa entra nel digitale", lang:"it", dir:"ltr" },
+    en: { title:"GeriScope — Complete Geriatric Assessment goes digital", lang:"en", dir:"ltr" },
+    zh: { title:"GeriScope — 全面老年评估数字化", lang:"zh", dir:"ltr" },
+    fr: { title:"GeriScope — L'Évaluation Gériatrique Complète devient numérique", lang:"fr", dir:"ltr" },
+    es: { title:"GeriScope — La Valoración Geriátrica Completa se digitaliza", lang:"es", dir:"ltr" },
+    de: { title:"GeriScope — Das geriatrische Assessment wird digital", lang:"de", dir:"ltr" },
+    ar: { title:"GeriScope — التقييم الجيرياتري الشامل يدخل العصر الرقمي", lang:"ar", dir:"rtl" },
+    ja: { title:"GeriScope — 包括的高齢者評価のデジタル化", lang:"ja", dir:"ltr" },
+    pt: { title:"GeriScope — A Avaliação Geriátrica Completa no digital", lang:"pt", dir:"ltr" },
   },
-  en:{ lang:"en", dir:"ltr",
-    pageTitle:"Patient Dashboard", settings:"Settings",
-    newPatient:"+ New Patient", preview:"PREVIEW",
-    searchPlaceholder:"Search by name or diagnosis...",
-    allCGA:"All CGA Status", allWards:"All",
-    statTotal:"Total Patients", statTotalSub:"Currently admitted",
-    statPending:"Pending CGA", statPendingSub:"Assessment required",
-    statAlerts:"Beers Alerts", statAlertsSub:"Medication review needed",
-    statFrail:"Frail / Severely Frail", statFrailSub:"CFS ≥ 5",
-    beersAlert:"Beers alerts",
-    thPatient:"Patient", thDiagnoses:"Diagnoses",
-    thCFS:"Frailty (CFS)", thCGA:"CGA Status",
-    thBeers:"Beers Alert",
-    cgaPending:"Pending", cgaInProgress:"In Progress", cgaComplete:"Complete",
-    cfsFit:"Fit", cfsVulnerable:"Vulnerable",
-    cfsFrail:"Frail", cfsSevere:"Severely Frail",
-    noPatients:"{T.noPatients}",
-    ofPatients:"of", patients:"patients",
-    dataFooter:"{T.dataFooter}",
-    openCGA:"Open CGA", viewDiary:"Diary",
-    orgSection:"Institution / Organisation",
-    phySection:"Responsible Physician",
-    orgLabel:"Hospital / clinic / institution name",
-    orgPlaceholder:"e.g. St. John's Hospital...",
-    subLabel:"Department / Specialisation (optional)",
-    subPlaceholder:"e.g. Geriatrics Unit...",
-    phyLabel:"Full name",
-    phyPlaceholder:"e.g. Dr. Mario Rossi",
-    roleLabel:"Qualification / Role",
-    rolePlaceholder:"e.g. Geriatrician, Internal Medicine...",
-    saveBtn:"Save Settings", savedBtn:"✓ Saved",
-    modalTitle:"Add Patient",
-    fnLabel:"First Name", lnLabel:"Last Name",
-    dobLabel:"Date of birth", wardLabel:"Ward",
-    diagLabel:"Diagnoses (one per line)", medsLabel:"Medications (one per line)",
-    cfsTip:"Clinical Frailty Scale (CFS) — Optional",
-    savePatient:"Save Patient", cancel:"Cancel",
-    diaryTypes:["Outpatient visit","Phone contact","Clinical note","Therapy update","Specialist consultation","CGA reassessment","Discharge / Admission","Family meeting","Procedure / Exam"],
-    activeDiagnoses:"Active Diagnoses", medications:"Medications",
-    beersWarning:"Beers Criteria Warning",
-    alerts:"alerts",
+
+  // ── NAV ───────────────────────────────────────────────────────────────────
+  nav: {
+    badge:    { it:"CGA PLATFORM", en:"CGA PLATFORM", zh:"CGA 平台", fr:"PLATEFORME CGA", es:"PLATAFORMA CGA", de:"CGA-PLATTFORM", ar:"منصة CGA", ja:"CGAプラットフォーム", pt:"PLATAFORMA CGA" },
+    scales:   { it:"Scale cliniche", en:"Clinical scales", zh:"临床量表", fr:"Échelles cliniques", es:"Escalas clínicas", de:"Klinische Skalen", ar:"المقاييس السريرية", ja:"臨床スケール", pt:"Escalas clínicas" },
+    features: { it:"Funzionalità", en:"Features", zh:"功能", fr:"Fonctionnalités", es:"Funcionalidades", de:"Funktionen", ar:"المميزات", ja:"機能", pt:"Funcionalidades" },
+    howto:    { it:"Come funziona", en:"How it works", zh:"使用方法", fr:"Comment ça marche", es:"Cómo funciona", de:"So funktioniert's", ar:"كيف يعمل", ja:"使い方", pt:"Como funciona" },
+    access:   { it:"Accedi →", en:"Open app →", zh:"打开应用 →", fr:"Accéder →", es:"Acceder →", de:"Öffnen →", ar:"← فتح", ja:"開く →", pt:"Aceder →" },
   },
-  zh:{ lang:"zh", dir:"ltr",
-    pageTitle:"患者管理看板", settings:"设置",
-    newPatient:"+ 新增患者", preview:"预览",
-    searchPlaceholder:"按姓名或诊断搜索...",
-    allCGA:"全部CGA状态", allWards:"全部",
-    statTotal:"患者总数", statTotalSub:"当前住院",
-    statPending:"待评估CGA", statPendingSub:"需要评估",
-    statAlerts:"Beers提醒", statAlertsSub:"需要审查用药",
-    statFrail:"衰弱/严重衰弱", statFrailSub:"CFS ≥ 5",
-    beersAlert:"条Beers提醒",
-    thPatient:"患者", thDiagnoses:"诊断",
-    thCFS:"衰弱度(CFS)", thCGA:"CGA状态",
-    thBeers:"Beers提醒",
-    cgaPending:"待处理", cgaInProgress:"进行中", cgaComplete:"已完成",
-    cfsFit:"健康", cfsVulnerable:"易感",
-    cfsFrail:"衰弱", cfsSevere:"严重衰弱",
-    noPatients:"未找到患者。",
-    ofPatients:"/", patients:"位患者",
-    dataFooter:"数据本地保存 · GeriScope CGA Platform v2.0",
-    openCGA:"打开CGA", viewDiary:"日志",
-    orgSection:"机构/组织",
-    phySection:"负责医生",
-    orgLabel:"医院/诊所/机构名称",
-    orgPlaceholder:"例如：圣约翰医院...",
-    subLabel:"科室/专科（可选）",
-    subPlaceholder:"例如：老年医学科...",
-    phyLabel:"姓名",
-    phyPlaceholder:"例如：Dr. Mario Rossi",
-    roleLabel:"职称/角色",
-    rolePlaceholder:"例如：老年科医生...",
-    saveBtn:"保存设置", savedBtn:"✓ 已保存",
-    modalTitle:"添加患者",
-    fnLabel:"名", lnLabel:"姓",
-    dobLabel:"出生日期", wardLabel:"病区",
-    diagLabel:"诊断（每行一个）", medsLabel:"药物（每行一个）",
-    cfsTip:"临床衰弱量表(CFS) — 可选",
-    savePatient:"保存患者", cancel:"取消",
-    diaryTypes:["门诊就诊","电话联系","临床记录","治疗更新","专科会诊","CGA再评估","出院/入院","家庭会谈","操作/检查"],
-    activeDiagnoses:"活跃诊断", medications:"药物",
-    beersWarning:"Beers标准警告",
-    alerts:"条提醒",
+
+  // ── HERO ──────────────────────────────────────────────────────────────────
+  hero: {
+    eyebrow:  { it:"STRUMENTO CLINICO PROFESSIONALE — BETA", en:"PROFESSIONAL CLINICAL TOOL — BETA", zh:"专业临床工具 — 测试版", fr:"OUTIL CLINIQUE PROFESSIONNEL — BÊTA", es:"HERRAMIENTA CLÍNICA PROFESIONAL — BETA", de:"PROFESSIONELLES KLINISCHES TOOL — BETA", ar:"أداة سريرية مهنية — نسخة تجريبية", ja:"プロフェッショナル臨床ツール — ベータ版", pt:"FERRAMENTA CLÍNICA PROFISSIONAL — BETA" },
+    h1a:      { it:"La Valutazione", en:"Complete Geriatric", zh:"全面老年", fr:"L'Évaluation", es:"La Valoración", de:"Das geriatrische", ar:"التقييم الجيرياتري", ja:"包括的", pt:"A Avaliação" },
+    h1b:      { it:"Geriatrica Completa", en:"Assessment", zh:"评估", fr:"Gériatrique Complète", es:"Geriátrica Completa", de:"Assessment", ar:"الشامل", ja:"高齢者評価", pt:"Geriátrica Completa" },
+    h1c:      { it:"entra nel digitale.", en:"goes digital.", zh:"已数字化。", fr:"entre dans le numérique.", es:"se digitaliza.", de:"wird digital.", ar:"يدخل العصر الرقمي.", ja:"のデジタル化。", pt:"entra no digital." },
+    subtitle: { it:"Per chi cura. Per chi vuole capire.", en:"For clinicians. For those who want to understand.", zh:"为临床医生而生，为关心老人的人而生。", fr:"Pour les soignants. Pour ceux qui veulent comprendre.", es:"Para quienes cuidan. Para quienes quieren entender.", de:"Für Kliniker. Für alle, die verstehen wollen.", ar:"للأطباء والمعنيين بالرعاية.", ja:"臨床家のために。理解したい人のために。", pt:"Para quem cuida. Para quem quer entender." },
+    desc:     { it:"GeriScope riunisce 24 scale geriatriche validate in un unico flusso digitale. Dalla valutazione cognitiva alla prognosi multidimensionale — con report AI, grafici clinici e personalizzazione per la tua struttura.", en:"GeriScope brings together 24 validated geriatric scales in a single digital workflow. From cognitive assessment to multidimensional prognosis — with AI reports, clinical charts and customisation for your institution.", zh:"GeriScope将24个经过验证的老年评估量表整合为一个数字化工作流程。从认知评估到多维预后——包含AI报告、临床图表和机构个性化定制。", fr:"GeriScope réunit 24 échelles gériatriques validées dans un flux numérique unique. De l'évaluation cognitive au pronostic multidimensionnel — avec rapports IA, graphiques cliniques et personnalisation pour votre établissement.", es:"GeriScope reúne 24 escalas geriátricas validadas en un único flujo digital. Desde la evaluación cognitiva hasta el pronóstico multidimensional — con informes IA, gráficos clínicos y personalización para tu centro.", de:"GeriScope vereint 24 validierte geriatrische Skalen in einem einzigen digitalen Workflow. Von der kognitiven Beurteilung bis zur multidimensionalen Prognose — mit KI-Berichten, klinischen Diagrammen und Anpassung für Ihre Einrichtung.", ar:"يجمع GeriScope 24 مقياسًا جيرياتريًا معتمدًا في سير عمل رقمي واحد. من التقييم المعرفي إلى التشخيص متعدد الأبعاد — مع تقارير الذكاء الاصطناعي والرسوم البيانية السريرية.", ja:"GeriScopeは24の検証済み老年評価スケールを単一のデジタルワークフローに統合します。認知評価から多次元的予後まで——AIレポート、臨床グラフ、施設カスタマイズを含む。", pt:"GeriScope reúne 24 escalas geriátricas validadas num único fluxo digital. Da avaliação cognitiva ao prognóstico multidimensional — com relatórios IA, gráficos clínicos e personalização para a sua instituição." },
+    btn1:     { it:"Apri la Dashboard", en:"Open Dashboard", zh:"打开仪表板", fr:"Ouvrir le tableau de bord", es:"Abrir el panel", de:"Dashboard öffnen", ar:"فتح لوحة التحكم", ja:"ダッシュボードを開く", pt:"Abrir o Dashboard" },
+    btn2:     { it:"Prova il modulo VMG", en:"Try the CGA module", zh:"试用CGA模块", fr:"Essayer le module EGC", es:"Probar el módulo VGC", de:"CGA-Modul testen", ar:"جرب وحدة CGA", ja:"CGAモジュールを試す", pt:"Experimentar o módulo AGC" },
+    stat1l:   { it:"Scale validate", en:"Validated scales", zh:"验证量表", fr:"Échelles validées", es:"Escalas validadas", de:"Validierte Skalen", ar:"مقاييس معتمدة", ja:"検証済みスケール", pt:"Escalas validadas" },
+    stat2l:   { it:"Domini clinici", en:"Clinical domains", zh:"临床领域", fr:"Domaines cliniques", es:"Dominios clínicos", de:"Klinische Domänen", ar:"المجالات السريرية", ja:"臨床領域", pt:"Domínios clínicos" },
+    stat3l:   { it:"Report integrato", en:"Integrated report", zh:"集成报告", fr:"Rapport intégré", es:"Informe integrado", de:"Integrierter Bericht", ar:"تقرير متكامل", ja:"統合レポート", pt:"Relatório integrado" },
+    stat4l:   { it:"Costo attuale", en:"Current cost", zh:"当前费用", fr:"Coût actuel", es:"Coste actual", de:"Aktueller Preis", ar:"التكلفة الحالية", ja:"現在のコスト", pt:"Custo atual" },
   },
-  fr:{ lang:"fr", dir:"ltr",
-    pageTitle:"Tableau de bord patients", settings:"Paramètres",
-    newPatient:"+ Nouveau patient", preview:"APERÇU",
-    searchPlaceholder:"Rechercher par nom ou diagnostic...",
-    allCGA:"Tous (statut EGC)", allWards:"Tous",
-    statTotal:"Patients totaux", statTotalSub:"Actuellement admis",
-    statPending:"EGC en attente", statPendingSub:"Évaluation requise",
-    statAlerts:"Alertes Beers", statAlertsSub:"Révision médicaments",
-    statFrail:"Fragiles / Très fragiles", statFrailSub:"CFS ≥ 5",
-    beersAlert:"alertes Beers",
-    thPatient:"Patient", thDiagnoses:"Diagnostics",
-    thCFS:"Fragilité (CFS)", thCGA:"Statut EGC",
-    thBeers:"Alerte Beers",
-    cgaPending:"En attente", cgaInProgress:"En cours", cgaComplete:"Complète",
-    cfsFit:"En forme", cfsVulnerable:"Vulnérable",
-    cfsFrail:"Fragile", cfsSevere:"Très fragile",
-    noPatients:"Aucun patient trouvé.",
-    ofPatients:"sur", patients:"patients",
-    dataFooter:"Données sauvegardées localement · GeriScope CGA Platform v2.0",
-    openCGA:"Ouvrir EGC", viewDiary:"Journal",
-    orgSection:"Établissement / Organisation",
-    phySection:"Médecin responsable",
-    orgLabel:"Nom de l'hôpital / cabinet",
-    orgPlaceholder:"ex. Hôpital Saint-Jean...",
-    subLabel:"Service / Spécialisation (optionnel)",
-    subPlaceholder:"ex. Service de gériatrie...",
-    phyLabel:"Nom et prénom",
-    phyPlaceholder:"ex. Dr. Mario Rossi",
-    roleLabel:"Qualification / Rôle",
-    rolePlaceholder:"ex. Gériatre, Médecin interniste...",
-    saveBtn:"Enregistrer", savedBtn:"✓ Enregistré",
-    modalTitle:"Ajouter un patient",
-    fnLabel:"Prénom", lnLabel:"Nom",
-    dobLabel:"Date de naissance", wardLabel:"Service",
-    diagLabel:"Diagnostics (un par ligne)", medsLabel:"Médicaments (un par ligne)",
-    cfsTip:"Échelle de fragilité clinique (CFS) — Facultatif",
-    savePatient:"Enregistrer", cancel:"Annuler",
-    diaryTypes:["Consultation externe","Contact téléphonique","Note clinique","Mise à jour traitement","Consultation spécialisée","Réévaluation EGC","Sortie / Hospitalisation","Entretien famille","Procédure / Examen"],
-    activeDiagnoses:"Diagnostics actifs", medications:"Médicaments",
-    beersWarning:"Avertissement critères Beers",
-    alerts:"alertes",
+
+  // ── DIVIDER ───────────────────────────────────────────────────────────────
+  divider: {
+    d1: { it:"Nessuna installazione", en:"No installation", zh:"无需安装", fr:"Sans installation", es:"Sin instalación", de:"Keine Installation", ar:"بدون تثبيت", ja:"インストール不要", pt:"Sem instalação" },
+    d2: { it:"Dati locali nel browser", en:"Data stays in your browser", zh:"数据保留在浏览器中", fr:"Données locales", es:"Datos locales", de:"Lokale Daten", ar:"بيانات محلية في المتصفح", ja:"データはブラウザ内に保存", pt:"Dados locais no browser" },
+    d3: { it:"Scoring automatico", en:"Automatic scoring", zh:"自动评分", fr:"Score automatique", es:"Puntuación automática", de:"Automatische Auswertung", ar:"تسجيل تلقائي", ja:"自動スコアリング", pt:"Pontuação automática" },
+    d4: { it:"Report AI integrato", en:"Integrated AI report", zh:"集成AI报告", fr:"Rapport IA intégré", es:"Informe IA integrado", de:"Integrierter KI-Bericht", ar:"تقرير ذكاء اصطناعي متكامل", ja:"AI統合レポート", pt:"Relatório IA integrado" },
+    d5: { it:"Personalizzabile per ogni struttura", en:"Customisable for every institution", zh:"可为每个机构定制", fr:"Personnalisable par établissement", es:"Personalizable por centro", de:"Für jede Einrichtung anpassbar", ar:"قابل للتخصيص لكل مؤسسة", ja:"各施設にカスタマイズ可能", pt:"Personalizável para cada instituição" },
   },
-  es:{ lang:"es", dir:"ltr",
-    pageTitle:"Panel de pacientes", settings:"Configuración",
-    newPatient:"+ Nuevo paciente", preview:"VISTA PREVIA",
-    searchPlaceholder:"Buscar por nombre o diagnóstico...",
-    allCGA:"Todos (estado VGC)", allWards:"Todos",
-    statTotal:"Pacientes totales", statTotalSub:"Actualmente ingresados",
-    statPending:"VGC pendiente", statPendingSub:"Evaluación requerida",
-    statAlerts:"Alertas Beers", statAlertsSub:"Revisión de medicamentos",
-    statFrail:"Frágiles / Muy frágiles", statFrailSub:"CFS ≥ 5",
-    beersAlert:"alertas Beers",
-    thPatient:"Paciente", thDiagnoses:"Diagnósticos",
-    thCFS:"Fragilidad (CFS)", thCGA:"Estado VGC",
-    thBeers:"Alerta Beers",
-    cgaPending:"Pendiente", cgaInProgress:"En curso", cgaComplete:"Completa",
-    cfsFit:"Apto", cfsVulnerable:"Vulnerable",
-    cfsFrail:"Frágil", cfsSevere:"Muy frágil",
-    noPatients:"No se encontraron pacientes.",
-    ofPatients:"de", patients:"pacientes",
-    dataFooter:"Datos guardados localmente · GeriScope CGA Platform v2.0",
-    openCGA:"Abrir VGC", viewDiary:"Diario",
-    orgSection:"Centro / Organización",
-    phySection:"Médico responsable",
-    orgLabel:"Nombre del hospital / clínica",
-    orgPlaceholder:"ej. Hospital San Juan...",
-    subLabel:"Servicio / Especialización (opcional)",
-    subPlaceholder:"ej. Servicio de geriatría...",
-    phyLabel:"Nombre y apellidos",
-    phyPlaceholder:"ej. Dr. Mario Rossi",
-    roleLabel:"Cualificación / Rol",
-    rolePlaceholder:"ej. Geriatra, Médico internista...",
-    saveBtn:"Guardar", savedBtn:"✓ Guardado",
-    modalTitle:"Añadir paciente",
-    fnLabel:"Nombre", lnLabel:"Apellidos",
-    dobLabel:"Fecha de nacimiento", wardLabel:"Servicio",
-    diagLabel:"Diagnósticos (uno por línea)", medsLabel:"Medicamentos (uno por línea)",
-    cfsTip:"Escala de fragilidad clínica (CFS) — Opcional",
-    savePatient:"Guardar paciente", cancel:"Cancelar",
-    diaryTypes:["Visita ambulatoria","Contacto telefónico","Nota clínica","Actualización de tratamiento","Consulta especializada","Reevaluación VGC","Alta / Ingreso","Reunión familiar","Procedimiento / Prueba"],
-    activeDiagnoses:"Diagnósticos activos", medications:"Medicamentos",
-    beersWarning:"Advertencia criterios Beers",
-    alerts:"alertas",
+
+  // ── DOMAINS ───────────────────────────────────────────────────────────────
+  domains: {
+    label:  { it:"Scale cliniche validate", en:"Validated clinical scales", zh:"经过验证的临床量表", fr:"Échelles cliniques validées", es:"Escalas clínicas validadas", de:"Validierte klinische Skalen", ar:"مقاييس سريرية معتمدة", ja:"検証済み臨床スケール", pt:"Escalas clínicas validadas" },
+    title:  { it:"Ogni dominio della", en:"Every domain of the", zh:"CGA的每个领域", fr:"Chaque domaine de l'", es:"Cada dominio de la", de:"Jede Domäne des", ar:"كل مجال من مجالات", ja:"CGAのすべての領域を", pt:"Cada domínio da" },
+    titleem:{ it:"VMG", en:"CGA", zh:"", fr:"EGC", es:"VGC", de:"CGA", ar:"CGA", ja:"CGA", pt:"AGC" },
+    titles2:{ it:", finalmente in un posto solo", en:", finally in one place", zh:"，终于汇聚一处", fr:", enfin au même endroit", es:", por fin en un solo lugar", de:", endlich an einem Ort", ar:"، أخيراً في مكان واحد", ja:"、ついて一か所に", pt:", finalmente num só lugar" },
+    desc:   { it:"Tutte le scale della Valutazione Geriatrica Completa in un flusso strutturato, con scoring automatico e interpretazione clinica immediata al termine di ogni test.", en:"All Complete Geriatric Assessment scales in a structured workflow, with automatic scoring and immediate clinical interpretation at the end of each test.", zh:"所有综合老年评估量表集成在一个结构化工作流程中，每个测试结束后自动评分并立即提供临床解读。", fr:"Toutes les échelles de l'Évaluation Gériatrique Complète dans un flux structuré, avec score automatique et interprétation clinique immédiate à la fin de chaque test.", es:"Todas las escalas de la Valoración Geriátrica Completa en un flujo estructurado, con puntuación automática e interpretación clínica inmediata al finalizar cada test.", de:"Alle Skalen des geriatrischen Assessments in einem strukturierten Workflow, mit automatischer Auswertung und sofortiger klinischer Interpretation nach jedem Test.", ar:"جميع مقاييس التقييم الجيرياتري الشامل في سير عمل منظم، مع تسجيل تلقائي وتفسير سريري فوري في نهاية كل اختبار.", ja:"すべての包括的高齢者評価スケールを構造化されたワークフローで、各テスト終了後に自動スコアリングと即時の臨床解釈を提供します。", pt:"Todas as escalas da Avaliação Geriátrica Completa num fluxo estruturado, com pontuação automática e interpretação clínica imediata no final de cada teste." },
+    d1name: { it:"Cognitivo", en:"Cognitive", zh:"认知功能", fr:"Cognitif", es:"Cognitivo", de:"Kognitiv", ar:"المعرفي", ja:"認知機能", pt:"Cognitivo" },
+    d1note: { it:"Screening di demenza, delirium e depressione con gli strumenti gold-standard della neuropsicologia geriatrica.", en:"Dementia, delirium and depression screening with gold-standard geriatric neuropsychology tools.", zh:"使用老年神经心理学金标准工具筛查痴呆、谵妄和抑郁。", fr:"Dépistage démence, delirium et dépression avec outils neuropsychologiques gold-standard.", es:"Cribado de demencia, delirium y depresión con herramientas neuropsicológicas gold-standard.", de:"Screening auf Demenz, Delir und Depression mit Gold-Standard-Instrumenten.", ar:"فحص الخرف والهذيان والاكتئاب بأدوات معيارية.", ja:"認知症、せん妄、うつ病のスクリーニング。", pt:"Rastreio de demência, delirium e depressão com instrumentos gold-standard." },
+    d2name: { it:"Funzionale", en:"Functional", zh:"功能状态", fr:"Fonctionnel", es:"Funcional", de:"Funktionell", ar:"الوظيفي", ja:"機能的状態", pt:"Funcional" },
+    d2note: { it:"Autonomia nelle attività quotidiane, mobilità, rischio di caduta e performance fisica.", en:"Independence in daily activities, mobility, fall risk and physical performance.", zh:"日常活动独立性、行动能力、跌倒风险和体能。", fr:"Autonomie dans les activités quotidiennes, mobilité, risque de chute et performance physique.", es:"Autonomía en actividades cotidianas, movilidad, riesgo de caída y rendimiento físico.", de:"Selbstständigkeit bei Alltagsaktivitäten, Mobilität, Sturzrisiko und körperliche Leistung.", ar:"الاستقلالية في الأنشطة اليومية والتنقل وخطر السقوط.", ja:"日常生活の自立、移動能力、転倒リスク、身体機能。", pt:"Autonomia nas atividades diárias, mobilidade, risco de quedas e performance física." },
+    d3name: { it:"Clinico", en:"Clinical", zh:"临床状况", fr:"Clinique", es:"Clínico", de:"Klinisch", ar:"السريري", ja:"臨床状態", pt:"Clínico" },
+    d3note: { it:"Comorbilità, politerapia secondo i Criteri di Beers, dolore e stato nutrizionale.", en:"Comorbidities, polypharmacy per Beers Criteria, pain and nutritional status.", zh:"合并症、Beers标准多药治疗、疼痛和营养状况。", fr:"Comorbidités, polymédication selon critères de Beers, douleur et état nutritionnel.", es:"Comorbilidades, polifarmacia según criterios Beers, dolor y estado nutricional.", de:"Komorbiditäten, Polypharmazie nach Beers-Kriterien, Schmerz und Ernährungsstatus.", ar:"الأمراض المصاحبة وتعدد الأدوية والألم والحالة التغذوية.", ja:"併存疾患、ビアーズ基準による多剤併用、疼痛、栄養状態。", pt:"Comorbilidades, polimedicação segundo critérios Beers, dor e estado nutricional." },
+    d4name: { it:"Sociale & QoL", en:"Social & QoL", zh:"社会支持与生活质量", fr:"Social & QdV", es:"Social & CdV", de:"Sozial & LQ", ar:"الاجتماعي وجودة الحياة", ja:"社会・QOL", pt:"Social & QdV" },
+    d4note: { it:"Rete di supporto, carico del caregiver, sonno, continenza e rischio lesioni da pressione.", en:"Support network, caregiver burden, sleep, continence and pressure injury risk.", zh:"支持网络、照顾者负担、睡眠、尿控和压力性损伤风险。", fr:"Réseau de soutien, charge aidant, sommeil, continence et risque d'escarre.", es:"Red de apoyo, carga del cuidador, sueño, continencia y riesgo de úlceras.", de:"Unterstützungsnetz, Pflegebelastung, Schlaf, Kontinenz und Dekubitus-Risiko.", ar:"شبكة الدعم وعبء مقدم الرعاية والنوم والتبول والوقاية من تقرحات الضغط.", ja:"支援ネットワーク、介護者負担、睡眠、禁制、褥瘡リスク。", pt:"Rede de apoio, sobrecarga do cuidador, sono, continência e risco de úlceras." },
+    d5name: { it:"Prognostico", en:"Prognostic", zh:"预后评估", fr:"Pronostique", es:"Pronóstico", de:"Prognostisch", ar:"التشخيصي", ja:"予後評価", pt:"Prognóstico" },
+    d5note: { it:"Rischio di dimissione complessa e mortalità a breve-medio termine.", en:"Risk of complex discharge and short-to-medium term mortality.", zh:"复杂出院风险和短中期死亡率。", fr:"Risque de sortie complexe et mortalité à court-moyen terme.", es:"Riesgo de alta compleja y mortalidad a corto-medio plazo.", de:"Risiko einer komplizierten Entlassung und kurz- bis mittelfristige Sterblichkeit.", ar:"خطر الخروج المعقد والوفيات على المدى القصير والمتوسط.", ja:"複雑な退院リスクと短中期死亡率。", pt:"Risco de alta complexa e mortalidade a curto-médio prazo." },
+    d6name: { it:"Report AI", en:"AI Report", zh:"AI报告", fr:"Rapport IA", es:"Informe IA", de:"KI-Bericht", ar:"تقرير الذكاء الاصطناعي", ja:"AIレポート", pt:"Relatório IA" },
+    d6note: { it:"Sintesi narrativa strutturata generata da AI, integra automaticamente tutti i punteggi VMG.", en:"Structured narrative summary generated by AI, automatically integrating all CGA scores.", zh:"AI生成的结构化叙述摘要，自动整合所有CGA评分。", fr:"Synthèse narrative structurée générée par IA, intégrant automatiquement tous les scores EGC.", es:"Resumen narrativo estructurado generado por IA, integrando automáticamente todas las puntuaciones VGC.", de:"Strukturierte narrative Zusammenfassung generiert durch KI, automatisch alle CGA-Scores integrierend.", ar:"ملخص سردي منظم من الذكاء الاصطناعي يدمج جميع درجات CGA.", ja:"AI生成の構造化叙述的要約。すべてのCGAスコアを自動統合。", pt:"Resumo narrativo estruturado gerado por IA, integrando automaticamente todos os scores AGC." },
   },
-  de:{ lang:"de", dir:"ltr",
-    pageTitle:"Patientendashboard", settings:"Einstellungen",
-    newPatient:"+ Neuer Patient", preview:"VORSCHAU",
-    searchPlaceholder:"Nach Name oder Diagnose suchen...",
-    allCGA:"Alle (CGA-Status)", allWards:"Alle",
-    statTotal:"Patienten gesamt", statTotalSub:"Aktuell aufgenommen",
-    statPending:"CGA ausstehend", statPendingSub:"Beurteilung erforderlich",
-    statAlerts:"Beers-Warnungen", statAlertsSub:"Medikamentenüberprüfung",
-    statFrail:"Gebrechlich / Sehr gebrechlich", statFrailSub:"CFS ≥ 5",
-    beersAlert:"Beers-Warnungen",
-    thPatient:"Patient", thDiagnoses:"Diagnosen",
-    thCFS:"Gebrechlichkeit (CFS)", thCGA:"CGA-Status",
-    thBeers:"Beers-Warnung",
-    cgaPending:"Ausstehend", cgaInProgress:"In Bearbeitung", cgaComplete:"Abgeschlossen",
-    cfsFit:"Fit", cfsVulnerable:"Gefährdet",
-    cfsFrail:"Gebrechlich", cfsSevere:"Sehr gebrechlich",
-    noPatients:"Keine Patienten gefunden.",
-    ofPatients:"von", patients:"Patienten",
-    dataFooter:"Lokal gespeichert · GeriScope CGA Platform v2.0",
-    openCGA:"CGA öffnen", viewDiary:"Tagebuch",
-    orgSection:"Einrichtung / Organisation",
-    phySection:"Verantwortlicher Arzt",
-    orgLabel:"Krankenhaus / Praxis / Einrichtung",
-    orgPlaceholder:"z.B. St.-Johannes-Klinik...",
-    subLabel:"Abteilung / Fachrichtung (optional)",
-    subPlaceholder:"z.B. Geriatrie...",
-    phyLabel:"Vor- und Nachname",
-    phyPlaceholder:"z.B. Dr. Mario Rossi",
-    roleLabel:"Qualifikation / Rolle",
-    rolePlaceholder:"z.B. Geriater, Internist...",
-    saveBtn:"Speichern", savedBtn:"✓ Gespeichert",
-    modalTitle:"Patient hinzufügen",
-    fnLabel:"Vorname", lnLabel:"Nachname",
-    dobLabel:"Geburtsdatum", wardLabel:"Station",
-    diagLabel:"Diagnosen (eine pro Zeile)", medsLabel:"Medikamente (eines pro Zeile)",
-    cfsTip:"Klinische Frailty-Skala (CFS) — Optional",
-    savePatient:"Patient speichern", cancel:"Abbrechen",
-    diaryTypes:["Ambulanter Termin","Telefonkontakt","Klinische Notiz","Therapieaktualisierung","Fachkonsultation","CGA-Neubewertung","Entlassung / Aufnahme","Familiengespräch","Eingriff / Untersuchung"],
-    activeDiagnoses:"Aktive Diagnosen", medications:"Medikamente",
-    beersWarning:"Beers-Kriterien-Warnung",
-    alerts:"Warnungen",
+
+  // ── FEATURES ──────────────────────────────────────────────────────────────
+  features: {
+    f1num:    { it:"01", en:"01", zh:"01", fr:"01", es:"01", de:"01", ar:"٠١", ja:"01", pt:"01" },
+    f1title:  { it:"Report clinico generato da AI", en:"AI-generated clinical report", zh:"AI生成的临床报告", fr:"Rapport clinique généré par IA", es:"Informe clínico generado por IA", de:"KI-generierter klinischer Bericht", ar:"تقرير سريري مولّد بالذكاء الاصطناعي", ja:"AI生成臨床レポート", pt:"Relatório clínico gerado por IA" },
+    f1desc:   { it:"Al termine della VMG, GeriScope produce automaticamente una sintesi narrativa strutturata integrando tutti i punteggi raccolti. Il medico rivede, integra e firma.", en:"At the end of the CGA, GeriScope automatically produces a structured narrative summary integrating all collected scores. The physician reviews, amends and signs.", zh:"CGA结束时，GeriScope自动生成整合所有评分的结构化叙述摘要。医生审阅、补充并签名。", fr:"À la fin de l'EGC, GeriScope produit automatiquement une synthèse narrative structurée intégrant tous les scores. Le médecin relit, complète et signe.", es:"Al finalizar la VGC, GeriScope produce automáticamente una síntesis narrativa estructurada integrando todas las puntuaciones. El médico revisa, completa y firma.", de:"Nach dem CGA erstellt GeriScope automatisch eine strukturierte Zusammenfassung aller Scores. Der Arzt prüft, ergänzt und unterzeichnet.", ar:"عند الانتهاء من CGA، ينتج GeriScope تلقائياً ملخصاً سردياً منظماً يدمج جميع الدرجات. يراجع الطبيب ويضيف ويوقع.", ja:"CGA終了時に、GeriScopeは収集したすべてのスコアを統合した構造化叙述的要約を自動生成します。医師が確認、修正、署名します。", pt:"No final da AGC, GeriScope produz automaticamente uma síntese narrativa estruturada integrando todos os scores. O médico revê, complementa e assina." },
+    f1li1:    { it:"Sintetizza MMSE, MoCA, ADL, IADL, MNA, Barthel, MPI, BRASS e CFS in un testo coerente", en:"Synthesises MMSE, MoCA, ADL, IADL, MNA, Barthel, MPI, BRASS and CFS into a coherent text", zh:"将MMSE、MoCA、ADL、IADL、MNA、Barthel、MPI、BRASS和CFS综合为连贯文本", fr:"Synthétise MMSE, MoCA, ADL, IADL, MNA, Barthel, MPI, BRASS et CFS en un texte cohérent", es:"Sintetiza MMSE, MoCA, ADL, IADL, MNA, Barthel, MPI, BRASS y CFS en un texto coherente", de:"Fasst MMSE, MoCA, ADL, IADL, MNA, Barthel, MPI, BRASS und CFS in einem kohärenten Text zusammen", ar:"يجمع MMSE وMoCA وADL وIADL وMNA وBarthel وMPI وBRASS وCFS في نص متماسك", ja:"MMSE、MoCA、ADL、IADL、MNA、Barthel、MPI、BRASS、CFSを一貫したテキストに統合", pt:"Sintetiza MMSE, MoCA, ADL, IADL, MNA, Barthel, MPI, BRASS e CFS num texto coerente" },
+    f1li2:    { it:"Orientato all'azione: include raccomandazioni terapeutiche e di follow-up", en:"Action-oriented: includes therapeutic and follow-up recommendations", zh:"以行动为导向：包括治疗和随访建议", fr:"Orienté action : inclut recommandations thérapeutiques et de suivi", es:"Orientado a la acción: incluye recomendaciones terapéuticas y de seguimiento", de:"Handlungsorientiert: enthält therapeutische Empfehlungen und Nachsorgehinweise", ar:"موجّه نحو العمل: يتضمن توصيات علاجية ومتابعة", ja:"行動指向：治療的推奨事項とフォローアップを含む", pt:"Orientado para a ação: inclui recomendações terapêuticas e de seguimento" },
+    f1li3:    { it:"Puramente orientativo — la decisione clinica resta sempre al professionista", en:"Purely indicative — clinical decision always rests with the professional", zh:"仅供参考——临床决策始终由专业人员做出", fr:"Purement indicatif — la décision clinique reste toujours au professionnel", es:"Meramente orientativo — la decisión clínica siempre corresponde al profesional", de:"Rein indikativ — die klinische Entscheidung liegt immer beim Arzt", ar:"إرشادي فقط — القرار السريري يبقى دائماً للمختص", ja:"あくまで補助的なもの——臨床的決定は常に専門家に委ねられます", pt:"Meramente indicativo — a decisão clínica pertence sempre ao profissional" },
+    f2num:    { it:"02", en:"02", zh:"02", fr:"02", es:"02", de:"02", ar:"٠٢", ja:"02", pt:"02" },
+    f2title:  { it:"La tua struttura, la tua identità", en:"Your institution, your identity", zh:"您的机构，您的品牌", fr:"Votre établissement, votre identité", es:"Tu centro, tu identidad", de:"Ihre Einrichtung, Ihre Identität", ar:"مؤسستك وهويتك", ja:"あなたの施設、あなたのブランド", pt:"A sua instituição, a sua identidade" },
+    f2desc:   { it:"Personalizza GeriScope con il nome del tuo ospedale, reparto e medico referente. Le informazioni appaiono nella sidebar, nel topbar e in ogni PDF stampato.", en:"Customise GeriScope with your hospital, department and referring physician name. The information appears in the sidebar, topbar and every printed PDF.", zh:"用您的医院、科室和主治医生名称自定义GeriScope。信息显示在侧边栏、顶部栏和每份打印的PDF中。", fr:"Personnalisez GeriScope avec le nom de votre hôpital, service et médecin référent. Les informations apparaissent dans la barre latérale, la barre supérieure et chaque PDF imprimé.", es:"Personaliza GeriScope con el nombre de tu hospital, servicio y médico referente. La información aparece en la barra lateral, la barra superior y cada PDF impreso.", de:"Passen Sie GeriScope mit dem Namen Ihres Krankenhauses, Ihrer Abteilung und des Arztes an. Die Informationen erscheinen in der Seitenleiste, der Titelleiste und jedem gedruckten PDF.", ar:"خصّص GeriScope باسم مستشفاك وقسمك وطبيبك المرجعي. تظهر المعلومات في الشريط الجانبي والعلوي وكل PDF مطبوع.", ja:"病院名、診療科、担当医師名でGeriScopeをカスタマイズ。サイドバー、トップバー、印刷PDFに表示されます。", pt:"Personalize o GeriScope com o nome do seu hospital, serviço e médico referente. A informação aparece na barra lateral, na barra superior e em cada PDF impresso." },
+    f3num:    { it:"03", en:"03", zh:"03", fr:"03", es:"03", de:"03", ar:"٠٣", ja:"03", pt:"03" },
+    f3title:  { it:"Progresso VMG in tempo reale", en:"Real-time CGA progress", zh:"实时CGA进度", fr:"Progression EGC en temps réel", es:"Progreso VGC en tiempo real", de:"Echtzeit-CGA-Fortschritt", ar:"تقدم CGA في الوقت الفعلي", ja:"リアルタイムCGA進捗", pt:"Progresso AGC em tempo real" },
+    f3desc:   { it:"Scegli le scale da somministrare, traccia il completamento in tempo reale e naviga liberamente tra i domini.", en:"Choose which scales to administer, track completion in real time and navigate freely between domains.", zh:"选择要进行的量表，实时跟踪完成情况，自由在领域之间导航。", fr:"Choisissez les échelles à administrer, suivez l'avancement en temps réel et naviguez librement entre les domaines.", es:"Elige las escalas a administrar, sigue el progreso en tiempo real y navega libremente entre dominios.", de:"Wählen Sie die zu verabreichenden Skalen, verfolgen Sie den Fortschritt in Echtzeit und navigieren Sie frei zwischen den Domänen.", ar:"اختر المقاييس للتطبيق وتتبع الإنجاز في الوقت الفعلي وانتقل بحرية بين المجالات.", ja:"実施するスケールを選択し、完了状況をリアルタイムで追跡し、領域間を自由に移動できます。", pt:"Escolha as escalas a administrar, acompanhe a conclusão em tempo real e navegue livremente entre domínios." },
   },
-  ar:{ lang:"ar", dir:"rtl",
-    pageTitle:"لوحة المرضى", settings:"الإعدادات",
-    newPatient:"+ مريض جديد", preview:"معاينة",
-    searchPlaceholder:"بحث بالاسم أو التشخيص...",
-    allCGA:"الكل (حالة CGA)", allWards:"الكل",
-    statTotal:"إجمالي المرضى", statTotalSub:"مقبولون حالياً",
-    statPending:"CGA معلق", statPendingSub:"التقييم مطلوب",
-    statAlerts:"تنبيهات Beers", statAlertsSub:"مراجعة الأدوية",
-    statFrail:"هشون / هشاشة شديدة", statFrailSub:"CFS ≥ 5",
-    beersAlert:"تنبيهات Beers",
-    thPatient:"المريض", thDiagnoses:"التشخيصات",
-    thCFS:"الهشاشة (CFS)", thCGA:"حالة CGA",
-    thBeers:"تنبيه Beers",
-    cgaPending:"معلق", cgaInProgress:"جارٍ", cgaComplete:"مكتمل",
-    cfsFit:"لائق", cfsVulnerable:"عرضة للخطر",
-    cfsFrail:"هش", cfsSevere:"هشاشة شديدة",
-    noPatients:"لم يتم العثور على مرضى.",
-    ofPatients:"من", patients:"مريض",
-    dataFooter:"البيانات محفوظة محلياً · GeriScope CGA Platform v2.0",
-    openCGA:"فتح CGA", viewDiary:"السجل",
-    orgSection:"المؤسسة / المنظمة",
-    phySection:"الطبيب المسؤول",
-    orgLabel:"اسم المستشفى / العيادة",
-    orgPlaceholder:"مثال: مستشفى القديس يوحنا...",
-    subLabel:"القسم / التخصص (اختياري)",
-    subPlaceholder:"مثال: قسم طب الشيخوخة...",
-    phyLabel:"الاسم الكامل",
-    phyPlaceholder:"مثال: Dr. Mario Rossi",
-    roleLabel:"المؤهل / الدور",
-    rolePlaceholder:"مثال: طبيب شيخوخة...",
-    saveBtn:"حفظ الإعدادات", savedBtn:"✓ تم الحفظ",
-    modalTitle:"إضافة مريض",
-    fnLabel:"الاسم الأول", lnLabel:"اسم العائلة",
-    dobLabel:"تاريخ الميلاد", wardLabel:"الجناح",
-    diagLabel:"التشخيصات (واحد لكل سطر)", medsLabel:"الأدوية (واحد لكل سطر)",
-    cfsTip:"مقياس الهشاشة السريرية (CFS) — اختياري",
-    savePatient:"حفظ المريض", cancel:"إلغاء",
-    diaryTypes:["زيارة عيادة خارجية","اتصال هاتفي","ملاحظة سريرية","تحديث العلاج","استشارة متخصصة","إعادة تقييم CGA","خروج / دخول","اجتماع عائلي","إجراء / فحص"],
-    activeDiagnoses:"التشخيصات النشطة", medications:"الأدوية",
-    beersWarning:"تحذير معايير Beers",
-    alerts:"تنبيهات",
+
+  // ── STEPS ─────────────────────────────────────────────────────────────────
+  steps: {
+    label:   { it:"Come funziona", en:"How it works", zh:"使用方法", fr:"Comment ça marche", es:"Cómo funciona", de:"So funktioniert's", ar:"كيف يعمل", ja:"使い方", pt:"Como funciona" },
+    title:   { it:"Dal paziente al report", en:"From patient to report", zh:"从患者到报告", fr:"Du patient au rapport", es:"Del paciente al informe", de:"Vom Patienten zum Bericht", ar:"من المريض إلى التقرير", titleem:{ it:"in quattro passi", en:"in four steps", zh:"四步完成", fr:"en quatre étapes", es:"en cuatro pasos", de:"in vier Schritten", ar:"في أربع خطوات", ja:"4ステップで", pt:"em quatro passos" } },
+    s1t:     { it:"Registra il paziente", en:"Register the patient", zh:"登记患者", fr:"Enregistrer le patient", es:"Registrar al paciente", de:"Patient erfassen", ar:"تسجيل المريض", ja:"患者を登録", pt:"Registar o doente" },
+    s1d:     { it:"Inserisci anagrafica, diagnosi e farmaci. Seleziona Inpatients o Outpatients.", en:"Enter patient details, diagnoses and medications. Select Inpatients or Outpatients.", zh:"输入患者信息、诊断和药物。选择住院或门诊。", fr:"Saisissez les données, diagnostics et médicaments. Sélectionnez Inpatients ou Outpatients.", es:"Introduce datos, diagnósticos y medicamentos. Selecciona Inpatients u Outpatients.", de:"Geben Sie Patientendaten, Diagnosen und Medikamente ein. Wählen Sie Stationär oder Ambulant.", ar:"أدخل بيانات المريض والتشخيصات والأدوية. اختر داخلي أو خارجي.", ja:"患者情報、診断、薬剤を入力。入院または外来を選択。", pt:"Introduza dados, diagnósticos e medicamentos. Selecione Inpatients ou Outpatients." },
+    s2t:     { it:"Seleziona le scale", en:"Select the scales", zh:"选择量表", fr:"Sélectionner les échelles", es:"Seleccionar las escalas", de:"Skalen auswählen", ar:"اختيار المقاييس", ja:"スケールを選択", pt:"Selecionar as escalas" },
+    s2d:     { it:"Nel modulo VMG scegli le scale da somministrare. CFS e Report sono pre-selezionati.", en:"In the CGA module choose which scales to administer. CFS and Report are pre-selected.", zh:"在CGA模块中选择要进行的量表。CFS和报告已预先选中。", fr:"Dans le module EGC, choisissez les échelles à administrer. CFS et Rapport sont pré-sélectionnés.", es:"En el módulo VGC elige las escalas a administrar. CFS e Informe están preseleccionados.", de:"Im CGA-Modul wählen Sie die Skalen. CFS und Bericht sind vorausgewählt.", ar:"في وحدة CGA اختر المقاييس للتطبيق. CFS والتقرير محددان مسبقاً.", ja:"CGAモジュールで実施するスケールを選択。CFSとレポートは事前選択済み。", pt:"No módulo AGC escolha as escalas a administrar. CFS e Relatório estão pré-selecionados." },
+    s3t:     { it:"Somministra la VMG", en:"Administer the CGA", zh:"进行CGA评估", fr:"Administrer l'EGC", es:"Administrar la VGC", de:"CGA durchführen", ar:"تطبيق CGA", ja:"CGAを実施", pt:"Administrar a AGC" },
+    s3d:     { it:"Compila ogni scala con scoring automatico, grafici handgrip e SVG per MMSE e MoCA.", en:"Complete each scale with automatic scoring, handgrip charts and SVG diagrams for MMSE and MoCA.", zh:"完成每个量表，包含自动评分、握力图表及MMSE和MoCA的SVG图示。", fr:"Remplissez chaque échelle avec score automatique, graphiques handgrip et SVG pour MMSE et MoCA.", es:"Completa cada escala con puntuación automática, gráficos de fuerza prensil y SVG para MMSE y MoCA.", de:"Füllen Sie jede Skala mit automatischer Auswertung, Handkraft-Diagrammen und SVG für MMSE und MoCA.", ar:"أكمل كل مقياس مع التسجيل التلقائي ومخططات قوة القبضة وصور SVG لـ MMSE وMoCA.", ja:"各スケールを自動スコアリング、握力チャート、MMSE・MoCA用SVG図で完成させます。", pt:"Preencha cada escala com pontuação automática, gráficos de força de preensão e SVG para MMSE e MoCA." },
+    s4t:     { it:"Genera e stampa", en:"Generate and print", zh:"生成并打印", fr:"Générer et imprimer", es:"Generar e imprimir", de:"Generieren und drucken", ar:"توليد وطباعة", ja:"生成して印刷", pt:"Gerar e imprimir" },
+    s4d:     { it:"Genera il report AI con tutti i punteggi e stampa il PDF intestato alla tua struttura.", en:"Generate the AI report with all scores and print the PDF with your institution's header.", zh:"生成包含所有评分的AI报告，并打印带有您机构标题的PDF。", fr:"Générez le rapport IA avec tous les scores et imprimez le PDF en-tête de votre établissement.", es:"Genera el informe IA con todas las puntuaciones e imprime el PDF con el membrete de tu centro.", de:"Erstellen Sie den KI-Bericht mit allen Scores und drucken Sie das PDF mit Ihrem Institutionskopf.", ar:"أنشئ تقرير الذكاء الاصطناعي بجميع الدرجات واطبع PDF بترويسة مؤسستك.", ja:"全スコア付きのAIレポートを生成し、施設名入りのPDFを印刷します。", pt:"Gere o relatório IA com todos os scores e imprima o PDF com o cabeçalho da sua instituição." },
   },
-  ja:{ lang:"ja", dir:"ltr",
-    pageTitle:"患者ダッシュボード", settings:"設定",
-    newPatient:"＋ 新規患者", preview:"プレビュー",
-    searchPlaceholder:"名前または診断名で検索...",
-    allCGA:"全CGA状態", allWards:"全て",
-    statTotal:"総患者数", statTotalSub:"現在入院中",
-    statPending:"CGA待機中", statPendingSub:"評価が必要",
-    statAlerts:"Beers警告", statAlertsSub:"薬剤レビューが必要",
-    statFrail:"フレイル/重度フレイル", statFrailSub:"CFS ≥ 5",
-    beersAlert:"件のBeers警告",
-    thPatient:"患者", thDiagnoses:"診断",
-    thCFS:"フレイル度(CFS)", thCGA:"CGA状態",
-    thBeers:"Beers警告",
-    cgaPending:"待機中", cgaInProgress:"進行中", cgaComplete:"完了",
-    cfsFit:"健康", cfsVulnerable:"要注意",
-    cfsFrail:"フレイル", cfsSevere:"重度フレイル",
-    noPatients:"患者が見つかりません。",
-    ofPatients:"/", patients:"名",
-    dataFooter:"データはローカルに保存 · GeriScope CGA Platform v2.0",
-    openCGA:"CGAを開く", viewDiary:"日誌",
-    orgSection:"施設 / 組織",
-    phySection:"担当医師",
-    orgLabel:"病院/クリニック名",
-    orgPlaceholder:"例：聖ヨハネ病院...",
-    subLabel:"診療科 / 専門（任意）",
-    subPlaceholder:"例：老年科...",
-    phyLabel:"氏名",
-    phyPlaceholder:"例：Dr. Mario Rossi",
-    roleLabel:"資格 / 役割",
-    rolePlaceholder:"例：老年科医、内科医...",
-    saveBtn:"設定を保存", savedBtn:"✓ 保存済み",
-    modalTitle:"患者を追加",
-    fnLabel:"名", lnLabel:"姓",
-    dobLabel:"生年月日", wardLabel:"病棟",
-    diagLabel:"診断（1行に1つ）", medsLabel:"薬剤（1行に1つ）",
-    cfsTip:"臨床フレイルスケール(CFS) — 任意",
-    savePatient:"患者を保存", cancel:"キャンセル",
-    diaryTypes:["外来診察","電話連絡","臨床メモ","治療更新","専門家相談","CGA再評価","退院/入院","家族面談","処置/検査"],
-    activeDiagnoses:"活動中の診断", medications:"薬剤",
-    beersWarning:"Beers基準警告",
-    alerts:"件の警告",
+
+  // ── COMPLIANCE ────────────────────────────────────────────────────────────
+  compliance: {
+    title:   { it:"Trasparenza clinica e legale", en:"Clinical and legal transparency", zh:"临床和法律透明度", fr:"Transparence clinique et légale", es:"Transparencia clínica y legal", de:"Klinische und rechtliche Transparenz", ar:"الشفافية السريرية والقانونية", ja:"臨床的・法的透明性", pt:"Transparência clínica e legal" },
+    desc:    { it:"GeriScope è uno strumento di documentazione a supporto del professionista sanitario. Non è classificato come dispositivo medico e non sostituisce il giudizio clinico del medico.", en:"GeriScope is a documentation tool to support healthcare professionals. It is not classified as a medical device and does not replace the clinician's judgement.", zh:"GeriScope是支持医疗专业人员的文档工具。不被归类为医疗器械，不能取代医生的临床判断。", fr:"GeriScope est un outil de documentation à l'appui du professionnel de santé. Il n'est pas classé comme dispositif médical et ne remplace pas le jugement clinique.", es:"GeriScope es una herramienta de documentación de apoyo al profesional sanitario. No está clasificada como producto sanitario y no sustituye el juicio clínico.", de:"GeriScope ist ein Dokumentationswerkzeug zur Unterstützung von Gesundheitsfachkräften. Es ist kein Medizinprodukt und ersetzt nicht das klinische Urteil.", ar:"GeriScope أداة توثيق لدعم المختصين الصحيين. لا تُصنَّف كجهاز طبي ولا تحل محل الحكم السريري.", ja:"GeriScopeは医療専門家を支援する文書ツールです。医療機器に分類されず、臨床判断の代替にはなりません。", pt:"GeriScope é uma ferramenta de documentação de apoio ao profissional de saúde. Não está classificada como dispositivo médico e não substitui o julgamento clínico." },
+    c1: { it:"Non classificato come dispositivo medico (MDR 2017/745)", en:"Not classified as a medical device (MDR 2017/745)", zh:"不被归类为医疗器械（MDR 2017/745）", fr:"Non classé dispositif médical (MDR 2017/745)", es:"No clasificado como producto sanitario (MDR 2017/745)", de:"Nicht als Medizinprodukt eingestuft (MDR 2017/745)", ar:"غير مصنف كجهاز طبي (MDR 2017/745)", ja:"医療機器に非分類（MDR 2017/745）", pt:"Não classificado como dispositivo médico (MDR 2017/745)" },
+    c2: { it:"Nessun dato trasmesso a server esterni", en:"No data transmitted to external servers", zh:"没有数据传输到外部服务器", fr:"Aucune donnée transmise à des serveurs externes", es:"Ningún dato transmitido a servidores externos", de:"Keine Daten an externe Server übertragen", ar:"لا بيانات تُرسل إلى خوادم خارجية", ja:"外部サーバーへのデータ送信なし", pt:"Nenhum dado transmitido a servidores externos" },
+    c3: { it:"Responsabilità clinica sempre al medico", en:"Clinical responsibility always with the physician", zh:"临床责任始终由医生承担", fr:"Responsabilité clinique toujours au médecin", es:"Responsabilidad clínica siempre del médico", de:"Klinische Verantwortung liegt immer beim Arzt", ar:"المسؤولية السريرية دائماً للطبيب", ja:"臨床的責任は常に医師に帰属", pt:"Responsabilidade clínica sempre do médico" },
+    c4: { it:"Versione beta — feedback attivamente raccolti", en:"Beta version — feedback actively collected", zh:"测试版——积极收集反馈", fr:"Version bêta — retours activement collectés", es:"Versión beta — comentarios recogidos activamente", de:"Beta-Version — Feedback aktiv gesammelt", ar:"نسخة تجريبية — يُجمَع التغذية الراجعة بنشاط", ja:"ベータ版——フィードバックを積極的に収集中", pt:"Versão beta — feedback ativamente recolhido" },
+    c5: { it:"Solo uso da parte di professionisti abilitati", en:"For use by qualified professionals only", zh:"仅限有资质的专业人员使用", fr:"Réservé aux professionnels habilités", es:"Solo para uso por profesionales habilitados", de:"Nur für qualifizierte Fachkräfte", ar:"للاستخدام من قِبل المختصين المؤهلين فقط", ja:"資格を持つ専門家のみ使用可能", pt:"Apenas para uso por profissionais qualificados" },
   },
-  pt:{ lang:"pt", dir:"ltr",
-    pageTitle:"Painel de doentes", settings:"Definições",
-    newPatient:"+ Novo doente", preview:"PRÉ-VISUALIZAÇÃO",
-    searchPlaceholder:"Pesquisar por nome ou diagnóstico...",
-    allCGA:"Todos (estado AGC)", allWards:"Todos",
-    statTotal:"Doentes totais", statTotalSub:"Atualmente internados",
-    statPending:"AGC pendente", statPendingSub:"Avaliação necessária",
-    statAlerts:"Alertas Beers", statAlertsSub:"Revisão de medicação",
-    statFrail:"Frágeis / Muito frágeis", statFrailSub:"CFS ≥ 5",
-    beersAlert:"alertas Beers",
-    thPatient:"Doente", thDiagnoses:"Diagnósticos",
-    thCFS:"Fragilidade (CFS)", thCGA:"Estado AGC",
-    thBeers:"Alerta Beers",
-    cgaPending:"Pendente", cgaInProgress:"Em curso", cgaComplete:"Completa",
-    cfsFit:"Apto", cfsVulnerable:"Vulnerável",
-    cfsFrail:"Frágil", cfsSevere:"Muito frágil",
-    noPatients:"Nenhum doente encontrado.",
-    ofPatients:"de", patients:"doentes",
-    dataFooter:"Dados guardados localmente · GeriScope CGA Platform v2.0",
-    openCGA:"Abrir AGC", viewDiary:"Diário",
-    orgSection:"Instituição / Organização",
-    phySection:"Médico responsável",
-    orgLabel:"Nome do hospital / clínica",
-    orgPlaceholder:"ex. Hospital São João...",
-    subLabel:"Serviço / Especialização (opcional)",
-    subPlaceholder:"ex. Serviço de Geriatria...",
-    phyLabel:"Nome completo",
-    phyPlaceholder:"ex. Dr. Mario Rossi",
-    roleLabel:"Qualificação / Função",
-    rolePlaceholder:"ex. Geriatra, Médico Internista...",
-    saveBtn:"Guardar definições", savedBtn:"✓ Guardado",
-    modalTitle:"Adicionar doente",
-    fnLabel:"Nome próprio", lnLabel:"Apelido",
-    dobLabel:"Data de nascimento", wardLabel:"Serviço",
-    diagLabel:"Diagnósticos (um por linha)", medsLabel:"Medicamentos (um por linha)",
-    cfsTip:"Escala de Fragilidade Clínica (CFS) — Opcional",
-    savePatient:"Guardar doente", cancel:"Cancelar",
-    diaryTypes:["Consulta externa","Contacto telefónico","Nota clínica","Atualização de terapia","Consulta especializada","Reavaliação AGC","Alta / Internamento","Reunião familiar","Procedimento / Exame"],
-    activeDiagnoses:"Diagnósticos ativos", medications:"Medicamentos",
-    beersWarning:"Aviso critérios Beers",
-    alerts:"alertas",
+
+  // ── CTA ───────────────────────────────────────────────────────────────────
+  cta: {
+    label:   { it:"Inizia adesso", en:"Get started", zh:"立即开始", fr:"Commencer maintenant", es:"Empieza ahora", de:"Jetzt starten", ar:"ابدأ الآن", ja:"今すぐ始める", pt:"Comece agora" },
+    h2a:     { it:"Pronto per la tua", en:"Ready for your", zh:"准备好开始", fr:"Prêt pour votre", es:"¿Listo para tu", de:"Bereit für Ihr", ar:"هل أنت مستعد لـ", ja:"初めての", pt:"Pronto para a sua" },
+    h2b:     { it:"prima VMG", en:"first CGA", zh:"第一次CGA", fr:"premier EGC", es:"primera VGC", de:"erstes CGA", ar:"أول تقييم جيرياتري", ja:"CGA", pt:"primeira AGC" },
+    h2c:     { it:"digitale?", en:"digital?", zh:"数字化评估？", fr:"numérique ?", es:"digital?", de:"digital?", ar:"الرقمي؟", ja:"デジタル？", pt:"digital?" },
+    desc:    { it:"Accedi gratuitamente, nessuna registrazione. Personalizza con la tua struttura e condividi con i colleghi in pochi minuti.", en:"Access for free, no registration required. Customise with your institution and share with colleagues in minutes.", zh:"免费访问，无需注册。几分钟内完成机构定制并与同事共享。", fr:"Accédez gratuitement, sans inscription. Personnalisez avec votre établissement et partagez avec vos collègues en quelques minutes.", es:"Accede gratuitamente, sin registro. Personaliza con tu centro y comparte con colegas en minutos.", de:"Kostenloser Zugang, keine Registrierung. In wenigen Minuten anpassen und mit Kollegen teilen.", ar:"الوصول مجاناً بدون تسجيل. خصّص مع مؤسستك وشارك مع زملائك في دقائق.", ja:"無料アクセス、登録不要。数分で施設設定を行い、同僚と共有できます。", pt:"Acesso gratuito, sem registo. Personalize com a sua instituição e partilhe com colegas em minutos." },
+    btn1:    { it:"Apri la Dashboard", en:"Open Dashboard", zh:"打开仪表板", fr:"Ouvrir le tableau de bord", es:"Abrir el panel", de:"Dashboard öffnen", ar:"فتح لوحة التحكم", ja:"ダッシュボードを開く", pt:"Abrir o Dashboard" },
+    btn2:    { it:"Prova il modulo VMG", en:"Try the CGA module", zh:"试用CGA模块", fr:"Essayer le module EGC", es:"Probar el módulo VGC", de:"CGA-Modul testen", ar:"جرب وحدة CGA", ja:"CGAモジュールを試す", pt:"Experimentar o módulo AGC" },
+    note:    { it:"Gratis · Nessun account · Dati locali nel tuo browser", en:"Free · No account · Data stays in your browser", zh:"免费 · 无需账户 · 数据保留在浏览器中", fr:"Gratuit · Sans compte · Données locales", es:"Gratis · Sin cuenta · Datos locales", de:"Kostenlos · Kein Konto · Lokale Daten", ar:"مجاني · بلا حساب · بيانات محلية", ja:"無料 · アカウント不要 · データはブラウザ内に保存", pt:"Grátis · Sem conta · Dados locais" },
+  },
+
+  // ── FOOTER ────────────────────────────────────────────────────────────────
+  footer: {
+    links1:  { it:"Dashboard", en:"Dashboard", zh:"仪表板", fr:"Tableau de bord", es:"Panel", de:"Dashboard", ar:"لوحة التحكم", ja:"ダッシュボード", pt:"Dashboard" },
+    links2:  { it:"Modulo VMG", en:"CGA Module", zh:"CGA模块", fr:"Module EGC", es:"Módulo VGC", de:"CGA-Modul", ar:"وحدة CGA", ja:"CGAモジュール", pt:"Módulo AGC" },
+    disc:    { it:"Strumento di documentazione clinica. Non dispositivo medico ai sensi del Reg. UE 2017/745. Non sostituisce il giudizio clinico.", en:"Clinical documentation tool. Not a medical device under EU Reg. 2017/745. Does not replace clinical judgement.", zh:"临床文档工具。不是EU条例2017/745下的医疗器械。不能取代临床判断。", fr:"Outil de documentation clinique. Non dispositif médical selon Règl. UE 2017/745. Ne remplace pas le jugement clinique.", es:"Herramienta de documentación clínica. No producto sanitario según Reg. UE 2017/745. No sustituye el juicio clínico.", de:"Klinisches Dokumentationswerkzeug. Kein Medizinprodukt gemäß EU-Verordnung 2017/745. Ersetzt nicht das klinische Urteil.", ar:"أداة توثيق سريري. ليست جهازاً طبياً وفق اللائحة الأوروبية 2017/745. لا تحل محل الحكم السريري.", ja:"臨床文書ツール。EU規則2017/745の医療機器ではありません。臨床判断の代替にはなりません。", pt:"Ferramenta de documentação clínica. Não é dispositivo médico ao abrigo do Reg. UE 2017/745. Não substitui o julgamento clínico." },
+    copy:    { it:"© 2025 GeriScope · Solo uso da parte di professionisti sanitari abilitati", en:"© 2025 GeriScope · For use by qualified healthcare professionals only", zh:"© 2025 GeriScope · 仅限有资质的医疗专业人员使用", fr:"© 2025 GeriScope · Réservé aux professionnels de santé habilités", es:"© 2025 GeriScope · Solo para uso por profesionales sanitarios habilitados", de:"© 2025 GeriScope · Nur für qualifizierte Gesundheitsfachkräfte", ar:"© 2025 GeriScope · للاستخدام من قِبل المختصين الصحيين المؤهلين فقط", ja:"© 2025 GeriScope · 資格を持つ医療専門家のみ使用可能", pt:"© 2025 GeriScope · Apenas para uso por profissionais de saúde qualificados" },
+  },
+
+  // ── LANGUAGE NAMES ────────────────────────────────────────────────────────
+  langNames: {
+    it:"Italiano", en:"English", zh:"中文", fr:"Français",
+    es:"Español", de:"Deutsch", ar:"العربية", ja:"日本語", pt:"Português"
   },
 };
 
-// lang helper — reads/writes localStorage
-function getDashLang(){ return localStorage.getItem("gs_lang")||"it"; }
+// ── LANGUAGE ENGINE ──────────────────────────────────────────────────────────
+(function(){
+  const LANGS = ['it','en','zh','fr','es','de','ar','ja','pt'];
+  const FLAGS = { it:'🇮🇹', en:'🇬🇧', zh:'🇨🇳', fr:'🇫🇷', es:'🇪🇸', de:'🇩🇪', ar:'🇸🇦', ja:'🇯🇵', pt:'🇧🇷' };
+  const T = GERISCOPE_I18N;
 
-function Dashboard(){
-  const [disclaimerDone, setDisclaimerDone] = React.useState(
-    ()=>sessionStorage.getItem("gs_disclaimer")==="1"
-  );
-  function acceptDisclaimer(){ sessionStorage.setItem("gs_disclaimer","1"); setDisclaimerDone(true); }
-
-  const [patients,setPatients]=useState(initPatients);
-  const [search,setSearch]=useState("");
-  const [filterWard,setFilterWard]=useState("All");
-  const [filterCGA,setFilterCGA]=useState("All");
-  const [showModal,setShowModal]=useState(false);
-  const [activeNav,setActiveNav]=useState("dashboard");
-  const [selectedPt,setSelectedPt]=useState(null);
-  const [branding,setBranding]=useState(()=>{
-    try{ return JSON.parse(localStorage.getItem("gs_branding")||"null")||{
-      orgName:"",orgSub:"",physicianName:"Dr. M. Greco",physicianRole:"Geriatrics Unit"
-    }; }catch(e){ return {orgName:"",orgSub:"",physicianName:"Dr. M. Greco",physicianRole:"Geriatrics Unit"}; }
-  });
-  function saveBranding(b){ setBranding(b); localStorage.setItem("gs_branding",JSON.stringify(b)); }
-
-  // i18n
-  const [lang,setLang]=useState(()=>getDashLang());
-  const T=DASH_TRANS[lang]||DASH_TRANS.it;
-  function switchLang(l){ localStorage.setItem("gs_lang",l); setLang(l); }
-  // RTL support
-  useEffect(()=>{
-    document.documentElement.lang=T.lang||lang;
-    document.documentElement.dir=T.dir||"ltr";
-  },[lang]);
-
-  const wards=["All",...[...new Set(patients.map(p=>p.ward))]];
-  const cgaStatuses=["All","pending","in_progress","complete"];
-
-  const filtered=patients.filter(p=>{
-    const q=search.toLowerCase();
-    const matchSearch=!q||
-      p.firstName.toLowerCase().includes(q)||
-      p.lastName.toLowerCase().includes(q)||
-      p.diagnoses.some(d=>d.toLowerCase().includes(q));
-    const matchWard=filterWard==="All"||p.ward===filterWard;
-    const matchCGA=filterCGA==="All"||p.cgaStatus===filterCGA;
-    return matchSearch&&matchWard&&matchCGA;
-  });
-
-  const stats={
-    total:patients.length,
-    pending:patients.filter(p=>p.cgaStatus==="pending").length,
-    alerts:patients.reduce((s,p)=>s+p.alerts,0),
-    frail:patients.filter(p=>p.cfs>=5).length,
-  };
-
-  function addPatient(pt){
-    const updated=[pt,...patients];
-    setPatients(updated);
-    savePatients(updated);
-    setShowModal(false);
+  function getLang(){
+    return localStorage.getItem('gs_lang') ||
+           (navigator.language||'').slice(0,2).toLowerCase() ||
+           'en';
   }
-
-  if(!disclaimerDone) return <DisclaimerModal onAccept={acceptDisclaimer}/>;
-
-  return(
-    <div style={{display:"flex",minHeight:"100vh",background:"var(--cream)"}}>
-      <Sidebar active={activeNav} setActive={setActiveNav} branding={branding}/>
-
-      {/* Main */}
-      <main style={{marginLeft:220,flex:1,display:"flex",flexDirection:"column",minHeight:"100vh"}}>
-
-        {/* Top bar */}
-        <header style={{background:"var(--white)",borderBottom:"1px solid var(--border)",
-          padding:"16px 40px",display:"flex",alignItems:"center",justifyContent:"space-between",
-          position:"sticky",top:0,zIndex:40}}>
-          <div>
-            <div style={{display:"flex",alignItems:"baseline",gap:12}}>
-              <div className="serif" style={{fontSize:22,fontWeight:600,letterSpacing:"-0.01em"}}>
-                {activeNav==="settings"?T.settings:T.pageTitle}
-              </div>
-              {branding.orgName&&activeNav!=="settings"&&(
-                <div style={{fontSize:12,color:"var(--sage)",fontWeight:500,
-                  padding:"2px 10px",borderRadius:10,
-                  background:"rgba(61,107,94,.08)",border:"1px solid rgba(61,107,94,.15)"}}>
-                  {branding.orgName}
-                </div>
-              )}
-            </div>
-            <div className="mono" style={{fontSize:10,color:"var(--gray)",
-              letterSpacing:"0.08em",marginTop:2}}>
-              {new Date().toLocaleDateString(lang,{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
-            </div>
-          </div>
-          <div style={{display:"flex",gap:12,alignItems:"center"}}>
-            {stats.alerts>0&&(
-              <div style={{display:"flex",alignItems:"center",gap:6,
-                background:"rgba(192,57,43,.08)",border:"1px solid rgba(192,57,43,.2)",
-                padding:"6px 14px",borderRadius:20}}>
-                <span style={{color:"var(--red)",animation:"pulse 2s ease-in-out infinite"}}>⚠</span>
-                <span style={{fontSize:12,color:"var(--red)",fontWeight:500}}>
-                  {stats.alerts} {T.beersAlert}
-                </span>
-              </div>
-            )}
-            {/* Language switcher */}
-            <div style={{display:"flex",gap:3,alignItems:"center",flexWrap:"wrap",maxWidth:180,marginRight:4}}>
-              {["it","en","zh","fr","es","de","ar","ja","pt"].map(l=>(
-                <button key={l} onClick={()=>switchLang(l)}
-                  title={{"it":"Italiano","en":"English","zh":"中文","fr":"Français","es":"Español","de":"Deutsch","ar":"العربية","ja":"日本語","pt":"Português"}[l]}
-                  style={{background:lang===l?"rgba(61,107,94,.15)":"none",
-                    border:lang===l?"1px solid rgba(61,107,94,.3)":"1px solid transparent",
-                    borderRadius:4,cursor:"pointer",fontSize:15,padding:"2px 4px",
-                    opacity:lang===l?1:.55,transition:"all .15s",lineHeight:1}}>
-                  {{"it":"🇮🇹","en":"🇬🇧","zh":"🇨🇳","fr":"🇫🇷","es":"🇪🇸","de":"🇩🇪","ar":"🇸🇦","ja":"🇯🇵","pt":"🇧🇷"}[l]}
-                </button>
-              ))}
-            </div>
-            <button onClick={()=>setShowModal(true)}
-              style={{padding:"9px 22px",background:"var(--sage)",color:"var(--white)",
-                border:"none",borderRadius:2,cursor:"pointer",
-                fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,
-                transition:"background .2s"}}
-              onMouseEnter={e=>{e.target.style.background="var(--ink)";}}
-              onMouseLeave={e=>{e.target.style.background="var(--sage)";}}>
-              {T.newPatient}
-            </button>
-          </div>
-        </header>
-
-        <div style={{padding:"32px 40px",flex:1}}>
-          {activeNav==="settings"&&(
-            <SettingsPanel branding={branding} onSave={saveBranding} tFn={T}/>
-          )}
-          {activeNav!=="settings"&&(
-          <>
-
-          {/* Stats */}
-          <div className="fu" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:32}}>
-            <StatCard label={T.statTotal} value={stats.total} sub={T.statTotalSub} color="var(--sage)" icon="◎"/>
-            <StatCard label={T.statPending} value={stats.pending} sub={T.statPendingSub} color="var(--amber)" icon="◈"/>
-            <StatCard label="Beers Alerts" value={stats.alerts} sub="Medication review needed" color="var(--red)" icon="⚠"/>
-            <StatCard label={T.statFrail} value={stats.frail} sub={T.statFrailSub} color="var(--gold)" icon="◇"/>
-          </div>
-
-          {/* Filters */}
-          <div style={{display:"flex",gap:12,marginBottom:20,alignItems:"center",flexWrap:"wrap"}}>
-            {/* Search */}
-            <div style={{position:"relative",flex:1,minWidth:220}}>
-              <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",
-                fontSize:14,color:"var(--gray)"}}>⊡</span>
-              <input value={search} onChange={e=>setSearch(e.target.value)}
-                placeholder={T.searchPlaceholder}
-                style={{width:"100%",padding:"9px 12px 9px 34px",
-                  border:"1px solid var(--border)",borderRadius:2,fontSize:13,
-                  background:"var(--white)",color:"var(--ink)",
-                  fontFamily:"'DM Sans',sans-serif",outline:"none"}}
-                onFocus={e=>e.target.style.borderColor="var(--sage)"}
-                onBlur={e=>e.target.style.borderColor="var(--border)"}/>
-            </div>
-
-            {/* Ward filter */}
-            <select value={filterWard} onChange={e=>setFilterWard(e.target.value)}
-              style={{padding:"9px 12px",border:"1px solid var(--border)",borderRadius:2,
-                fontSize:13,background:"var(--white)",color:"var(--ink)",
-                fontFamily:"'DM Sans',sans-serif",cursor:"pointer",outline:"none"}}>
-              {wards.map(w=><option key={w}>{w==="All"?T.allWards:w}</option>)}
-            </select>
-
-            {/* CGA filter */}
-            <select value={filterCGA} onChange={e=>setFilterCGA(e.target.value)}
-              style={{padding:"9px 12px",border:"1px solid var(--border)",borderRadius:2,
-                fontSize:13,background:"var(--white)",color:"var(--ink)",
-                fontFamily:"'DM Sans',sans-serif",cursor:"pointer",outline:"none"}}>
-              <option value="All">{T.allCGA}</option>
-              <option value="pending">{T.cgaPending}</option>
-              <option value="in_progress">{T.cgaInProgress}</option>
-              <option value="complete">{T.cgaComplete}</option>
-            </select>
-
-            <div className="mono" style={{fontSize:11,color:"var(--gray)",marginLeft:"auto"}}>
-              {filtered.length} {T.ofPatients} {patients.length} {T.patients}
-            </div>
-          </div>
-
-          {/* Table */}
-          <div style={{background:"var(--white)",border:"1px solid var(--border)",
-            borderRadius:3,overflow:"hidden"}}>
-            <table style={{width:"100%",borderCollapse:"collapse"}}>
-              <thead>
-                <tr style={{background:"var(--cream)"}}>
-                  {[T.thPatient,T.thDiagnoses,T.thCFS,T.thCGA,T.thBeers,""].map(h=>(
-                    <th key={h} style={{padding:"11px 20px",textAlign:"left",
-                      fontSize:10,fontWeight:500,color:"var(--gray)",
-                      letterSpacing:"0.08em",textTransform:"uppercase",
-                      borderBottom:"1px solid var(--border)",
-                      fontFamily:"'DM Mono',monospace"}}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length===0?(
-                  <tr><td colSpan={6} style={{padding:"40px",textAlign:"center",color:"var(--gray)",fontSize:14}}>
-                    No patients found.
-                  </td></tr>
-                ):filtered.map((p,i)=>(
-                  <PatientRow key={p.id} p={p} onSelect={setSelectedPt} delay={i*40} tFn={T}/>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Footer note */}
-          <div className="mono" style={{fontSize:10,color:"var(--gray)",marginTop:16,
-            letterSpacing:"0.06em",textAlign:"right"}}>
-            Data saved locally · GeriScope CGA Platform v2.0
-          </div>
-          </>
-          )}
-        </div>
-      </main>
-
-      {/* Modals */}
-      {showModal&&<NewPatientModal onClose={()=>setShowModal(false)} onSave={addPatient} tFn={T}/>}
-
-      {/* Patient detail panel */}
-      {selectedPt&&(
-        <PatientPanel p={selectedPt} onClose={()=>setSelectedPt(null)} tFn={T}/>
-      )}
-      <DisclaimerFooter/>
-    </div>
-  );
-}
-
-// ── Patient side panel ────────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════════════
-// DIARIO CLINICO — storage helpers
-// ══════════════════════════════════════════════════════════════════════════
-function getDiaryTypes(){ return (DASH_TRANS[getDashLang()]||DASH_TRANS.it).diaryTypes; }
-
-function loadDiary(ptId){
-  try{ return JSON.parse(localStorage.getItem("gs_diary_"+ptId)||"[]"); }
-  catch(e){ return []; }
-}
-function saveDiary(ptId, entries){
-  localStorage.setItem("gs_diary_"+ptId, JSON.stringify(entries));
-}
-function newEntryId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
-
-// ── Diario component ──────────────────────────────────────────────────────
-function DiaryTab({p}){
-  const [entries, setEntries] = React.useState(()=>loadDiary(p.id));
-  const [showForm, setShowForm] = React.useState(false);
-  const [editing, setEditing] = React.useState(null); // entry id being edited
-  const [filter, setFilter] = React.useState("Tutti");
-  const [form, setForm] = React.useState({
-    date: new Date().toISOString().split("T")[0],
-    time: new Date().toTimeString().slice(0,5),
-    type: getDiaryTypes()[0],
-    clinician: p.physician||"",
-    text: "",
-    tags: "",
-  });
-
-  function persist(next){ setEntries(next); saveDiary(p.id, next); }
-
-  function openNew(){
-    setForm({
-      date: new Date().toISOString().split("T")[0],
-      time: new Date().toTimeString().slice(0,5),
-      type: getDiaryTypes()[0],
-      clinician: p.physician||"",
-      text: "", tags: "",
+  function setLang(l){
+    if(!LANGS.includes(l)) l = 'en';
+    localStorage.setItem('gs_lang', l);
+    applyLang(l);
+  }
+  function t(section, key, lang){
+    return (T[section]&&T[section][key]&&T[section][key][lang]) || (T[section]&&T[section][key]&&T[section][key]['en']) || '';
+  }
+  function applyLang(lang){
+    const meta = T.meta[lang]||T.meta.en;
+    document.title = meta.title;
+    document.documentElement.lang = meta.lang;
+    document.documentElement.dir  = meta.dir;
+    // Apply all data-i18n elements
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const [sec,key] = el.getAttribute('data-i18n').split('.');
+      const val = t(sec,key,lang);
+      if(val) el.textContent = val;
     });
-    setEditing(null);
-    setShowForm(true);
-  }
-
-  function openEdit(entry){
-    setForm({...entry, tags:(entry.tags||[]).join(", ")});
-    setEditing(entry.id);
-    setShowForm(true);
-  }
-
-  function saveEntry(){
-    if(!form.text.trim()) return;
-    const entry = {
-      ...form,
-      id: editing || newEntryId(),
-      tags: form.tags ? form.tags.split(",").map(t=>t.trim()).filter(Boolean) : [],
-    };
-    let next;
-    if(editing){
-      next = entries.map(e=>e.id===editing ? entry : e);
+    document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+      const [sec,key] = el.getAttribute('data-i18n-html').split('.');
+      const val = t(sec,key,lang);
+      if(val) el.innerHTML = val;
+    });
+    // RTL adjustments
+    if(meta.dir==='rtl'){
+      document.body.style.setProperty('--text-align','right');
     } else {
-      next = [entry, ...entries];
+      document.body.style.setProperty('--text-align','left');
     }
-    persist(next);
-    setShowForm(false);
-    setEditing(null);
+    // Update active state in switcher
+    document.querySelectorAll('.lang-btn').forEach(b=>{
+      b.classList.toggle('active', b.dataset.lang===lang);
+    });
   }
 
-  function deleteEntry(id){
-    if(!window.confirm("Eliminare questa nota?")) return;
-    persist(entries.filter(e=>e.id!==id));
+  function buildSwitcher(){
+    const sw = document.getElementById('lang-switcher');
+    if(!sw) return;
+    const names = T.langNames;
+    sw.innerHTML = LANGS.map(l=>
+      `<button class="lang-btn${getLang()===l?' active':''}" data-lang="${l}" title="${names[l]}">${FLAGS[l]}</button>`
+    ).join('');
+    sw.addEventListener('click', e=>{
+      const b = e.target.closest('.lang-btn');
+      if(b) setLang(b.dataset.lang);
+    });
   }
 
-  const types = ["Tutti", ...getDiaryTypes()];
-  const filtered = filter==="Tutti" ? entries : entries.filter(e=>e.type===filter);
+  window.GS_setLang = setLang;
+  window.GS_getLang = getLang;
 
-  const TYPE_COLORS = {
-    "Visita ambulatoriale":     {c:"#27ae60",b:"rgba(39,174,96,.1)"},
-    "Contatto telefonico":      {c:"#2980b9",b:"rgba(41,128,185,.1)"},
-    "Nota clinica":             {c:"#6b7b7e",b:"rgba(107,123,126,.1)"},
-    "Aggiornamento terapia":    {c:"#e67e22",b:"rgba(230,126,34,.1)"},
-    "Consulenza specialistica": {c:"#8e44ad",b:"rgba(142,68,173,.1)"},
-    "Rivalutazione VMG":        {c:"#3d6b5e",b:"rgba(61,107,94,.12)"},
-    "Dimissione / Ricovero":    {c:"#c0392b",b:"rgba(192,57,43,.1)"},
-    "Colloquio familiare":      {c:"#c9a84c",b:"rgba(201,168,76,.1)"},
-    "Procedura / Esame":        {c:"#16a085",b:"rgba(22,160,133,.1)"},
-  };
-
-  function tcol(type){ return TYPE_COLORS[type]||{c:"var(--gray)",b:"rgba(107,123,126,.1)"}; }
-
-  function fmtDate(d){
-    if(!d) return "";
-    const [y,m,dd] = d.split("-");
-    const months=["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
-    return `${dd} ${months[parseInt(m)-1]} ${y}`;
-  }
-
-  const iS = {
-    padding:"6px 10px",border:"1px solid var(--border)",borderRadius:2,
-    fontSize:12,background:"var(--cream)",color:"var(--ink)",
-    fontFamily:"'DM Sans',sans-serif",width:"100%",
-  };
-
-  return(
-    <div>
-      {/* Header azione */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-        <div>
-          <div style={{fontSize:13,fontWeight:600,color:"var(--ink)"}}>
-            Diario Clinico
-          </div>
-          <div style={{fontSize:10,color:"var(--gray)",marginTop:1}}>
-            {entries.length} {entries.length===1?"nota":"note"} registrate
-          </div>
-        </div>
-        <button onClick={openNew}
-          style={{padding:"8px 14px",background:"var(--sage)",color:"white",border:"none",
-            borderRadius:2,cursor:"pointer",fontSize:11,fontWeight:600,
-            fontFamily:"'DM Sans',sans-serif",display:"flex",alignItems:"center",gap:5}}>
-          + Nuova nota
-        </button>
-      </div>
-
-      {/* Form nuova/modifica nota */}
-      {showForm&&(
-        <div style={{background:"var(--cream)",border:"1.5px solid rgba(61,107,94,.25)",
-          borderRadius:3,padding:"14px",marginBottom:14}}>
-          <div className="mono" style={{fontSize:8.5,color:"var(--sage)",letterSpacing:"0.1em",
-            textTransform:"uppercase",marginBottom:10}}>
-            {editing ? "Modifica nota" : "Nuova nota clinica"}
-          </div>
-
-          {/* Date, time, type row */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-            <div>
-              <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>Data</label>
-              <input type="date" value={form.date}
-                onChange={e=>setForm(f=>({...f,date:e.target.value}))} style={iS}/>
-            </div>
-            <div>
-              <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>Ora</label>
-              <input type="time" value={form.time}
-                onChange={e=>setForm(f=>({...f,time:e.target.value}))} style={iS}/>
-            </div>
-          </div>
-          <div style={{marginBottom:8}}>
-            <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>Tipo contatto</label>
-            <select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))} style={iS}>
-              {getDiaryTypes().map(t=><option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-          <div style={{marginBottom:8}}>
-            <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>Sanitario</label>
-            <input type="text" value={form.clinician}
-              onChange={e=>setForm(f=>({...f,clinician:e.target.value}))}
-              placeholder="Nome e qualifica..."
-              style={iS}/>
-          </div>
-          <div style={{marginBottom:8}}>
-            <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>
-              Nota clinica
-            </label>
-            <textarea rows={5} value={form.text}
-              onChange={e=>setForm(f=>({...f,text:e.target.value}))}
-              placeholder="Descrizione del contatto, riscontri clinici, modifiche terapeutiche, istruzioni al paziente/caregiver..."
-              style={{...iS,resize:"vertical",lineHeight:1.65}}/>
-          </div>
-          <div style={{marginBottom:12}}>
-            <label style={{fontSize:10,color:"var(--gray)",display:"block",marginBottom:3}}>
-              Tag (opzionali, separati da virgola)
-            </label>
-            <input type="text" value={form.tags}
-              onChange={e=>setForm(f=>({...f,tags:e.target.value}))}
-              placeholder="es. caduta, dolore, cognitivo, terapia..."
-              style={iS}/>
-          </div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={saveEntry}
-              style={{flex:1,padding:"9px",background:"var(--sage)",color:"white",border:"none",
-                borderRadius:2,cursor:"pointer",fontSize:12,fontWeight:600,
-                fontFamily:"'DM Sans',sans-serif"}}>
-              {editing ? "Aggiorna" : "Salva nota"}
-            </button>
-            <button onClick={()=>{setShowForm(false);setEditing(null);}}
-              style={{padding:"9px 16px",background:"transparent",color:"var(--gray)",
-                border:"1px solid var(--border)",borderRadius:2,cursor:"pointer",fontSize:12,
-                fontFamily:"'DM Sans',sans-serif"}}>
-              Annulla
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Filter chips */}
-      {entries.length > 0 && (
-        <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:12}}>
-          {["Tutti",...[...new Set(entries.map(e=>e.type))]].map(t=>(
-            <button key={t} onClick={()=>setFilter(t)}
-              style={{padding:"3px 9px",borderRadius:12,border:"1px solid",fontSize:10,
-                cursor:"pointer",fontFamily:"'DM Sans',sans-serif",
-                borderColor:filter===t?"var(--sage)":"var(--border)",
-                background:filter===t?"var(--sage)":"transparent",
-                color:filter===t?"white":"var(--gray)"}}>
-              {t}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Entries */}
-      {filtered.length===0&&(
-        <div style={{textAlign:"center",padding:"32px 16px",color:"var(--gray)"}}>
-          <div style={{fontSize:28,marginBottom:8,opacity:.3}}>📋</div>
-          <div style={{fontSize:12}}>
-            {entries.length===0
-              ? "Nessuna nota ancora registrata.\nCliccate + Nuova nota per iniziare."
-              : "Nessuna nota per il filtro selezionato."}
-          </div>
-        </div>
-      )}
-
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        {filtered.map(entry=>{
-          const tc = tcol(entry.type);
-          return(
-            <div key={entry.id}
-              style={{background:"var(--white)",border:"1px solid var(--border)",
-                borderRadius:2,overflow:"hidden"}}>
-              {/* Entry header */}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
-                padding:"9px 12px",borderBottom:"1px solid var(--border)",
-                background:"rgba(0,0,0,.015)"}}>
-                <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <span style={{fontSize:10,padding:"2px 7px",borderRadius:10,
-                    background:tc.b,color:tc.c,fontWeight:600,whiteSpace:"nowrap"}}>
-                    {entry.type}
-                  </span>
-                  <span className="mono" style={{fontSize:10,color:"var(--gray)"}}>
-                    {fmtDate(entry.date)}{entry.time?" · "+entry.time:""}
-                  </span>
-                </div>
-                <div style={{display:"flex",gap:4}}>
-                  <button onClick={()=>openEdit(entry)}
-                    style={{padding:"2px 7px",background:"transparent",border:"1px solid var(--border)",
-                      borderRadius:2,cursor:"pointer",fontSize:10,color:"var(--gray)",
-                      fontFamily:"'DM Sans',sans-serif"}}>
-                    Modifica
-                  </button>
-                  <button onClick={()=>deleteEntry(entry.id)}
-                    style={{padding:"2px 7px",background:"transparent",border:"1px solid rgba(192,57,43,.2)",
-                      borderRadius:2,cursor:"pointer",fontSize:10,color:"var(--red)",
-                      fontFamily:"'DM Sans',sans-serif"}}>
-                    ×
-                  </button>
-                </div>
-              </div>
-              {/* Entry body */}
-              <div style={{padding:"10px 12px"}}>
-                {entry.clinician&&(
-                  <div className="mono" style={{fontSize:9,color:"var(--sage)",
-                    letterSpacing:"0.06em",marginBottom:5}}>{entry.clinician}</div>
-                )}
-                <div style={{fontSize:12,lineHeight:1.7,color:"var(--ink)",
-                  whiteSpace:"pre-wrap"}}>{entry.text}</div>
-                {entry.tags&&entry.tags.length>0&&(
-                  <div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:8}}>
-                    {entry.tags.map(tag=>(
-                      <span key={tag} style={{fontSize:9,padding:"1px 6px",borderRadius:8,
-                        background:"var(--cream)",color:"var(--gray)",
-                        border:"1px solid var(--border)"}}>#{tag}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// PATIENT PANEL — with tabs
-// ══════════════════════════════════════════════════════════════════════════
-function PatientPanel({p,onClose,tFn}){
-  const _T=tFn||(DASH_TRANS[getDashLang()]||DASH_TRANS.it);
-  const [panelTab, setPanelTab] = React.useState("overview");
-  const age=getAge(p.dob);
-  const cfs=cfsBadge(p.cfs||0);
-
-  const BEERS=[
-    {drug:"Warfarin",reason:"High bleeding risk in elderly"},
-    {drug:"Amiodarone",reason:"Risk of thyroid dysfunction and pulmonary toxicity"},
-    {drug:"Diazepam",reason:"Benzodiazepines: fall risk, cognitive impairment"},
-    {drug:"Lorazepam",reason:"Benzodiazepines: fall risk, cognitive impairment"},
-    {drug:"Nitrazepam",reason:"Benzodiazepines: fall risk, cognitive impairment"},
-    {drug:"Quetiapine",reason:"Antipsychotics: stroke risk, mortality in dementia"},
-    {drug:"Digoxin",reason:"Narrow therapeutic index, toxicity risk"},
-    {drug:"Hydrochlorothiazide",reason:"Risk of hyponatremia and hypokalemia"},
-    {drug:"Tramadol",reason:"Opioids: fall risk, delirium, constipation"},
-    {drug:"Prednisone",reason:"Systemic corticosteroids: hyperglycemia, delirium risk"},
-  ];
-
-  const beersAlerts=p.medications
-    .map(med=>{const hit=BEERS.find(b=>med.toLowerCase().includes(b.drug.toLowerCase()));return hit?{med,reason:hit.reason}:null;})
-    .filter(Boolean);
-
-  const ts = (t) => ({
-    flex:1, padding:"10px 8px", fontSize:11, fontWeight:panelTab===t?600:400,
-    cursor:"pointer", border:"none",
-    borderBottom:panelTab===t?"2px solid var(--sage)":"2px solid transparent",
-    background:"transparent",
-    color:panelTab===t?"var(--sage)":"var(--gray)",
-    fontFamily:"'DM Sans',sans-serif", transition:"all .15s",
+  document.addEventListener('DOMContentLoaded', ()=>{
+    buildSwitcher();
+    setLang(getLang());
   });
+})();
 
-  return(
-    <div style={{position:"fixed",top:0,right:0,bottom:0,width:420,
-      background:"var(--white)",borderLeft:"1px solid var(--border)",
-      zIndex:100,display:"flex",flexDirection:"column",
-      boxShadow:"-8px 0 32px rgba(0,0,0,.1)",
-      animation:"slideIn .3s ease"}}>
+</script>
 
-      {/* Header */}
-      <div style={{padding:"22px 24px 0",background:"var(--ink)",flexShrink:0}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-          <div>
-            <div style={{fontSize:18,fontWeight:600,color:"var(--white)",
-              fontFamily:"'Cormorant Garamond',serif"}}>
-              {p.lastName}, {p.firstName}
-            </div>
-            <div className="mono" style={{fontSize:10,color:"rgba(255,255,255,.4)",
-              marginTop:3,letterSpacing:"0.08em"}}>
-              {age}y · {p.gender} · {p.ward}
-            </div>
-          </div>
-          <button onClick={onClose}
-            style={{background:"rgba(255,255,255,.1)",border:"none",color:"white",
-              width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:18,
-              display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-        </div>
-        {p.cfs&&(
-          <div style={{marginBottom:10,display:"inline-flex",alignItems:"center",gap:6,
-            background:cfs.bg,padding:"3px 10px",borderRadius:20}}>
-            <span className="mono" style={{fontSize:11,fontWeight:600,color:cfs.color}}>CFS {p.cfs}</span>
-            <span style={{fontSize:11,color:cfs.color}}>{cfs.label}</span>
-          </div>
-        )}
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 22 22" style="width:22px;height:22px">
+      <circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(61,107,94,.4)" stroke-width="1"/>
+      <circle cx="11" cy="11" r="5.5" fill="none" stroke="rgba(61,107,94,.55)" stroke-width=".8"/>
+      <circle cx="11" cy="11" r="2" fill="#3d6b5e"/>
+      <line x1="1.5" y1="11" x2="20.5" y2="11" stroke="rgba(61,107,94,.25)" stroke-width=".6"/>
+      <line x1="11" y1="1.5" x2="11" y2="20.5" stroke="rgba(61,107,94,.25)" stroke-width=".6"/>
+    </svg>
+    <div class="nav-brand">
+      <div class="nav-brand-name">Geri<em>Scope</em></div>
+      <div class="nav-brand-sub" data-i18n="nav.badge">CGA PLATFORM</div>
+    </div>
+  </a>
+  <div class="nav-center">
+    <a href="#scale" class="nav-link" data-i18n="nav.scales">Scale cliniche</a>
+    <a href="#funzionalita" class="nav-link" data-i18n="nav.features">Funzionalità</a>
+    <a href="#come-funziona" class="nav-link" data-i18n="nav.howto">Come funziona</a>
+  </div>
+  <div class="nav-right">
+    <div id="lang-switcher"></div>
+    <a href="/app.html" class="btn-nav" data-i18n="nav.access">Accedi →</a>
+  </div>
+</nav>
 
-        {/* Tabs */}
-        <div style={{display:"flex",borderTop:"1px solid rgba(255,255,255,.08)",marginTop:4}}>
-          <button style={ts("overview")} onClick={()=>setPanelTab("overview")}>Panoramica</button>
-          <button style={{...ts("diary"),position:"relative"}} onClick={()=>setPanelTab("diary")}>
-            Diario Clinico
-            <span style={{marginLeft:5,fontSize:8,padding:"1px 5px",borderRadius:8,
-              background:"var(--gold)",color:"var(--ink)",fontWeight:700,
-              verticalAlign:"middle"}}>PRO</span>
-          </button>
-        </div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-shape"></div>
+  <div class="hero-bg-lines"></div>
+  <div class="hero-left">
+    <div class="hero-eyebrow"><span data-i18n="hero.eyebrow">STRUMENTO CLINICO PROFESSIONALE — BETA</span></div>
+    <h1 class="serif">
+      <span data-i18n="hero.h1a">La Valutazione</span><br>
+      <span data-i18n="hero.h1b">Geriatrica Completa</span><br>
+      <em data-i18n="hero.h1c">entra nel digitale.</em>
+    </h1>
+    <p class="hero-subtitle" data-i18n="hero.subtitle">Per chi cura. Per chi vuole capire.</p>
+    <p class="hero-desc" data-i18n="hero.desc">GeriScope riunisce 24 scale geriatriche validate in un unico flusso digitale.</p>
+    <div class="hero-actions">
+      <a href="/app.html" class="btn-primary" data-i18n="hero.btn1">Apri la Dashboard</a>
+      <a href="/geriscope-cga-v2.html" class="btn-outline" data-i18n="hero.btn2">Prova il modulo VMG</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="n">24<span>+</span></div><div class="l" data-i18n="hero.stat1l">Scale validate</div></div>
+      <div class="hero-stat"><div class="n">7</div><div class="l" data-i18n="hero.stat2l">Domini clinici</div></div>
+      <div class="hero-stat"><div class="n">AI</div><div class="l" data-i18n="hero.stat3l">Report integrato</div></div>
+      <div class="hero-stat"><div class="n">€<span>0</span></div><div class="l" data-i18n="hero.stat4l">Costo attuale</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="mockup-shell">
+      <div class="mockup-bar">
+        <div class="mdot" style="background:#e04b3a"></div>
+        <div class="mdot" style="background:#e0a83a"></div>
+        <div class="mdot" style="background:#3aae5c"></div>
+        <div class="mockup-addr">geriscope.vercel.app</div>
       </div>
-
-      {/* Body — scrollable */}
-      <div style={{flex:1,overflowY:"auto",padding:"18px 22px"}}>
-
-        {panelTab==="overview"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:18}}>
-
-            {/* Diagnoses */}
-            <div>
-              <div className="mono" style={{fontSize:10,color:"var(--gray)",letterSpacing:"0.1em",
-                textTransform:"uppercase",marginBottom:8}}>{_T.activeDiagnoses}</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                {p.diagnoses.map(d=>(
-                  <span key={d} style={{fontSize:11,padding:"3px 9px",borderRadius:2,
-                    background:"var(--sage-pale)",color:"var(--sage)",
-                    border:"1px solid rgba(61,107,94,.2)"}}>{d}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Medications */}
-            <div>
-              <div className="mono" style={{fontSize:10,color:"var(--gray)",letterSpacing:"0.1em",
-                textTransform:"uppercase",marginBottom:8}}>Terapia in Atto</div>
-              <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                {p.medications.map(m=>{
-                  const isAlert=beersAlerts.find(b=>b.med===m);
-                  return(
-                    <div key={m} style={{display:"flex",alignItems:"center",gap:8,
-                      padding:"6px 10px",borderRadius:2,
-                      background:isAlert?"rgba(192,57,43,.06)":"rgba(107,123,126,.05)",
-                      border:`1px solid ${isAlert?"rgba(192,57,43,.2)":"var(--border)"}`}}>
-                      <span style={{fontSize:13}}>{isAlert?"⚠":"•"}</span>
-                      <span style={{fontSize:12,color:isAlert?"var(--red)":"var(--ink)",
-                        fontWeight:isAlert?500:400}}>{m}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Beers */}
-            {beersAlerts.length>0&&(
-              <div style={{background:"rgba(192,57,43,.06)",border:"1px solid rgba(192,57,43,.2)",
-                borderRadius:3,padding:"14px"}}>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-                  <span style={{color:"var(--red)"}}>⚠</span>
-                  <span className="mono" style={{fontSize:10,color:"var(--red)",
-                    letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:600}}>
-                    {beersAlerts.length} {_T.beersWarning}
-                  </span>
-                </div>
-                {beersAlerts.map(a=>(
-                  <div key={a.med} style={{marginBottom:7,paddingBottom:7,
-                    borderBottom:"1px solid rgba(192,57,43,.1)"}}>
-                    <div style={{fontSize:12,fontWeight:600,color:"var(--red)",marginBottom:2}}>{a.med}</div>
-                    <div style={{fontSize:11,color:"var(--gray)",lineHeight:1.5}}>{a.reason}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* CGA Scores */}
-            {Object.keys(p.scores).length>0&&(
-              <div>
-                <div className="mono" style={{fontSize:10,color:"var(--gray)",letterSpacing:"0.1em",
-                  textTransform:"uppercase",marginBottom:8}}>Ultimi Score VMG</div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
-                  {Object.entries(p.scores).map(([k,v])=>(
-                    <div key={k} style={{padding:"10px 13px",background:"var(--cream)",
-                      border:"1px solid var(--border)",borderRadius:2}}>
-                      <div className="mono" style={{fontSize:9,color:"var(--gray)",
-                        textTransform:"uppercase",letterSpacing:"0.08em"}}>{k}</div>
-                      <div className="serif" style={{fontSize:22,fontWeight:300,color:"var(--ink)",marginTop:2}}>{v}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* CTA */}
-            <button
-              onClick={()=>{
-                localStorage.setItem("gs_active_patient",JSON.stringify(p));
-                window.open("geriscope-cga-v2.html","_blank");
-              }}
-              style={{width:"100%",padding:"12px",background:"var(--sage)",
-                color:"var(--white)",border:"none",borderRadius:2,cursor:"pointer",
-                fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500}}
-              onMouseEnter={e=>{e.target.style.background="var(--ink)";}}
-              onMouseLeave={e=>{e.target.style.background="var(--sage)";}}>
-              {p.cgaStatus==="complete"?("📄 "+_T.openCGA+" →"):("▶ "+_T.openCGA+" →")}
-            </button>
+      <div class="mockup-content">
+        <div class="mock-sidebar">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+            <svg viewBox="0 0 22 22" style="width:14px;height:14px;flex-shrink:0"><circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(90,144,128,.5)" stroke-width="1.2"/><circle cx="11" cy="11" r="2" fill="#5a9080"/></svg>
+            <div class="mock-logo-text">Geri<em>Scope</em></div>
           </div>
-        )}
-
-        {panelTab==="diary"&&<DiaryTab p={p}/>}
-
+          <div class="mock-org">U.O.C. GERIATRIA</div>
+          <div class="mock-item on">◎ &nbsp;Dashboard</div>
+          <div class="mock-item">◈ &nbsp;VMG</div>
+          <div class="mock-item">◉ &nbsp;Settings</div>
+        </div>
+        <div class="mock-main">
+          <div class="mock-title">Patient Dashboard</div>
+          <div class="mock-cards">
+            <div class="mock-card"><div class="cv">12</div><div class="cl">TOTAL</div></div>
+            <div class="mock-card"><div class="cv" style="color:#b8953a">4</div><div class="cl">PENDING</div></div>
+            <div class="mock-card"><div class="cv" style="color:#c0392b">3</div><div class="cl">ALERTS</div></div>
+            <div class="mock-card"><div class="cv" style="color:#3d6b5e">5</div><div class="cl">CFS ≥5</div></div>
+          </div>
+          <div class="mock-table">
+            <div class="mock-thead"><span>Patient</span><span>Diagnosis</span><span>CFS</span><span>CGA</span></div>
+            <div class="mock-row">
+              <span style="font-weight:500">Rossi, Mario</span>
+              <span style="color:#8a8278;font-size:9px">HT, MCI</span>
+              <span><span class="mbadge" style="background:rgba(184,149,58,.12);color:#b8953a">4</span></span>
+              <span><span class="mbadge" style="background:rgba(61,107,94,.1);color:#3d6b5e">Done</span></span>
+            </div>
+            <div class="mock-row">
+              <span style="font-weight:500">Bianchi, Anna</span>
+              <span style="color:#8a8278;font-size:9px">AF, Osteoporosis</span>
+              <span><span class="mbadge" style="background:rgba(192,57,43,.08);color:#c0392b">5</span></span>
+              <span><span class="mbadge" style="background:rgba(184,149,58,.1);color:#b8953a">Ongoing</span></span>
+            </div>
+            <div class="mock-row">
+              <span style="font-weight:500">Ferrari, G.</span>
+              <span style="color:#8a8278;font-size:9px">Parkinson</span>
+              <span><span class="mbadge" style="background:rgba(192,57,43,.08);color:#c0392b">6</span></span>
+              <span><span class="mbadge" style="background:rgba(107,123,126,.1);color:#6b7b7e">Pending</span></span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  );
-}
+  </div>
+</section>
 
+<!-- DIVIDER -->
+<div class="divider-bar">
+  <div class="divider-item" data-i18n="divider.d1">Nessuna installazione</div>
+  <div class="divider-item" data-i18n="divider.d2">Dati locali nel browser</div>
+  <div class="divider-item" data-i18n="divider.d3">Scoring automatico</div>
+  <div class="divider-item" data-i18n="divider.d4">Report AI integrato</div>
+  <div class="divider-item" data-i18n="divider.d5">Personalizzabile per ogni struttura</div>
+</div>
 
-// ═══════════════════════════════════════════════════════════════════════════
-// DISCLAIMER MODALE
-// ═══════════════════════════════════════════════════════════════════════════
-function DisclaimerModal({onAccept}){
-  const [checked, setChecked] = React.useState(false);
-  const [scrolled, setScrolled] = React.useState(false);
-  function handleScroll(e){
-    const el=e.target;
-    if(el.scrollTop+el.clientHeight>=el.scrollHeight-10) setScrolled(true);
+<!-- DOMAINS -->
+<section class="section" id="scale">
+  <div class="section-label" data-i18n="domains.label">Scale cliniche validate</div>
+  <h2 class="section-title reveal">
+    <span data-i18n="domains.title">Ogni dominio della</span>
+    <em data-i18n="domains.titleem"> VMG</em><span data-i18n="domains.titles2">, finalmente in un posto solo</span>
+  </h2>
+  <p class="section-desc reveal" data-i18n="domains.desc">Tutte le scale della Valutazione Geriatrica Completa in un flusso strutturato.</p>
+  <div class="domains-grid reveal">
+    <div class="domain-card"><div class="domain-icon">🧠</div><div class="domain-name" data-i18n="domains.d1name">Cognitivo</div><div class="domain-note" data-i18n="domains.d1note">Screening demenza, delirium e depressione.</div><div class="domain-scales"><span class="scale-tag">MMSE</span><span class="scale-tag">MoCA</span><span class="scale-tag">Clock Drawing</span><span class="scale-tag">GDS-15</span><span class="scale-tag">CAM</span></div></div>
+    <div class="domain-card"><div class="domain-icon">🦾</div><div class="domain-name" data-i18n="domains.d2name">Funzionale</div><div class="domain-note" data-i18n="domains.d2note">Autonomia, mobilità, cadute, performance fisica.</div><div class="domain-scales"><span class="scale-tag">Barthel</span><span class="scale-tag">ADL Katz</span><span class="scale-tag">IADL Lawton</span><span class="scale-tag">SPPB</span><span class="scale-tag">TUG</span><span class="scale-tag">Tinetti</span></div></div>
+    <div class="domain-card"><div class="domain-icon">💊</div><div class="domain-name" data-i18n="domains.d3name">Clinico</div><div class="domain-note" data-i18n="domains.d3note">Comorbilità, politerapia Beers, dolore, nutrizione.</div><div class="domain-scales"><span class="scale-tag">CIRS</span><span class="scale-tag">Charlson</span><span class="scale-tag">Beers</span><span class="scale-tag">MNA-SF</span><span class="scale-tag">NRS Pain</span><span class="scale-tag">Handgrip</span></div></div>
+    <div class="domain-card"><div class="domain-icon">🤝</div><div class="domain-name" data-i18n="domains.d4name">Sociale & QoL</div><div class="domain-note" data-i18n="domains.d4note">Rete sociale, caregiver, sonno, continenza, Braden.</div><div class="domain-scales"><span class="scale-tag">Rete Sociale</span><span class="scale-tag">Zarit</span><span class="scale-tag">PSQI</span><span class="scale-tag">Braden</span><span class="scale-tag">Disfagia</span></div></div>
+    <div class="domain-card"><div class="domain-icon">📈</div><div class="domain-name" data-i18n="domains.d5name">Prognostico</div><div class="domain-note" data-i18n="domains.d5note">Dimissione complessa e mortalità breve-medio termine.</div><div class="domain-scales"><span class="scale-tag">BRASS</span><span class="scale-tag">MPI (Pilotto 2008)</span><span class="scale-tag">CFS</span></div></div>
+    <div class="domain-card"><div class="domain-icon">📄</div><div class="domain-name" data-i18n="domains.d6name">Report AI</div><div class="domain-note" data-i18n="domains.d6note">Sintesi narrativa AI, tutti i punteggi VMG integrati.</div><div class="domain-scales"><span class="scale-tag">Sintesi cognitiva</span><span class="scale-tag">Profilo funzionale</span><span class="scale-tag">MPI+CFS+BRASS</span></div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div id="funzionalita">
+  <div class="feature-row reveal">
+    <div>
+      <div class="feature-num" data-i18n="features.f1num">01</div>
+      <div class="feature-title" data-i18n="features.f1title">Report clinico generato da AI</div>
+      <p class="feature-desc" data-i18n="features.f1desc">Al termine della VMG, GeriScope produce automaticamente una sintesi narrativa strutturata.</p>
+      <ul class="feature-list">
+        <li data-i18n="features.f1li1">Sintetizza MMSE, MoCA, ADL, IADL, MNA, Barthel, MPI, BRASS e CFS</li>
+        <li data-i18n="features.f1li2">Orientato all'azione: raccomandazioni terapeutiche e di follow-up</li>
+        <li data-i18n="features.f1li3">Puramente orientativo — decisione clinica sempre al professionista</li>
+      </ul>
+    </div>
+    <div class="feature-visual">
+      <div class="fv-label">AI Report — Rossi Mario · 78y</div>
+      <div class="ai-sect-head" data-i18n="features.f1li1" style="font-size:10px">Sintesi cognitiva</div>
+      <div class="ai-text">MMSE 22/30, MoCA 18/30 — MCI amnestica. Clock Drawing: difficoltà visuospaziali...</div>
+      <div class="ai-sect-head" style="font-size:10px">Profilo funzionale</div>
+      <div class="ai-text">IADL 4/8, ADL 5/6. TUG 14s — rischio caduta aumentato...</div>
+      <div class="ai-scores">
+        <div class="ai-sc"><div class="sv">22<span style="font-size:11px;color:#8a8278">/30</span></div><div class="sl">MMSE</div></div>
+        <div class="ai-sc"><div class="sv">0.52</div><div class="sl">MPI-2</div></div>
+        <div class="ai-sc"><div class="sv">4</div><div class="sl">CFS</div></div>
+        <div class="ai-sc"><div class="sv">16</div><div class="sl">BRASS</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-row flip reveal">
+    <div class="feature-visual">
+      <div class="fv-label">Branding — <span data-i18n="features.f2title">La tua struttura</span></div>
+      <div class="brand-preview">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 22 22" style="width:14px;height:14px;flex-shrink:0"><circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(90,144,128,.5)" stroke-width="1"/><circle cx="11" cy="11" r="2" fill="#5a9080"/></svg>
+          <div class="brand-name">Geri<em>Scope</em></div>
+        </div>
+        <div class="brand-org">Ospedale San Giovanni · U.O.C. Geriatria</div>
+        <div class="brand-dept">DR. MARIO ROSSI — GERIATRA</div>
+      </div>
+      <div class="brand-inputs">
+        <div><div class="brand-input-label">STRUTTURA</div><div class="brand-input">Ospedale San Giovanni</div></div>
+        <div><div class="brand-input-label">REPARTO</div><div class="brand-input">U.O.C. Geriatria</div></div>
+        <div><div class="brand-input-label">MEDICO</div><div class="brand-input">Dr. Mario Rossi</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="feature-num" data-i18n="features.f2num">02</div>
+      <div class="feature-title" data-i18n="features.f2title">La tua struttura, la tua identità</div>
+      <p class="feature-desc" data-i18n="features.f2desc">Personalizza GeriScope con il nome del tuo ospedale, reparto e medico referente.</p>
+    </div>
+  </div>
+
+  <div class="feature-row reveal">
+    <div>
+      <div class="feature-num" data-i18n="features.f3num">03</div>
+      <div class="feature-title" data-i18n="features.f3title">Progresso VMG in tempo reale</div>
+      <p class="feature-desc" data-i18n="features.f3desc">Scegli le scale, traccia il completamento e naviga liberamente tra i domini.</p>
+    </div>
+    <div class="feature-visual">
+      <div class="fv-label">CGA Progress — Rossi Mario</div>
+      <div class="prog-list">
+        <div class="prog-item"><div class="prog-label">MMSE</div><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><div class="prog-pct">100%</div></div>
+        <div class="prog-item"><div class="prog-label">Barthel</div><div class="prog-bar"><div class="prog-fill" style="width:80%"></div></div><div class="prog-pct">80%</div></div>
+        <div class="prog-item"><div class="prog-label">ADL</div><div class="prog-bar"><div class="prog-fill" style="width:67%"></div></div><div class="prog-pct">67%</div></div>
+        <div class="prog-item"><div class="prog-label">MNA-SF</div><div class="prog-bar"><div class="prog-fill" style="width:40%;background:#b8953a"></div></div><div class="prog-pct">40%</div></div>
+        <div class="prog-item"><div class="prog-label">MPI</div><div class="prog-bar"><div class="prog-fill" style="width:25%;background:#b8953a"></div></div><div class="prog-pct">25%</div></div>
+        <div class="prog-item"><div class="prog-label">CFS</div><div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div><div class="prog-pct">0%</div></div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:10px;color:var(--warm-gray);font-family:'DM Mono',monospace;letter-spacing:.05em">CGA OVERALL</span>
+        <span style="font-family:'Instrument Serif',Georgia,serif;font-size:22px;color:var(--sage)">62%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<section class="steps-section" id="come-funziona">
+  <div class="steps-bg"></div>
+  <div style="position:relative;z-index:1;max-width:1100px;margin:0 auto">
+    <div class="section-label" data-i18n="steps.label">Come funziona</div>
+    <h2 class="section-title reveal">
+      <span data-i18n="steps.title">Dal paziente al report</span><br>
+      <em data-i18n="steps.titleem.it">in quattro passi</em>
+    </h2>
+    <div class="steps-grid reveal">
+      <div class="step" data-n="1"><div class="step-icon">👤</div><div class="step-title" data-i18n="steps.s1t">Registra il paziente</div><div class="step-desc" data-i18n="steps.s1d">Inserisci anagrafica, diagnosi e farmaci.</div></div>
+      <div class="step" data-n="2"><div class="step-icon">☑</div><div class="step-title" data-i18n="steps.s2t">Seleziona le scale</div><div class="step-desc" data-i18n="steps.s2d">Scegli le scale nel modulo VMG.</div></div>
+      <div class="step" data-n="3"><div class="step-icon">📋</div><div class="step-title" data-i18n="steps.s3t">Somministra la VMG</div><div class="step-desc" data-i18n="steps.s3d">Scoring automatico per ogni scala.</div></div>
+      <div class="step" data-n="4"><div class="step-icon">📄</div><div class="step-title" data-i18n="steps.s4t">Genera e stampa</div><div class="step-desc" data-i18n="steps.s4d">Report AI e PDF intestato alla tua struttura.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLIANCE -->
+<div class="compliance-section reveal">
+  <div class="compliance-left">
+    <h3 data-i18n="compliance.title">Trasparenza clinica e legale</h3>
+    <p data-i18n="compliance.desc">GeriScope è uno strumento di documentazione a supporto del professionista sanitario.</p>
+  </div>
+  <div class="compliance-right">
+    <div class="compliance-item" data-i18n="compliance.c1">Non classificato come dispositivo medico (MDR 2017/745)</div>
+    <div class="compliance-item" data-i18n="compliance.c2">Nessun dato trasmesso a server esterni</div>
+    <div class="compliance-item" data-i18n="compliance.c3">Responsabilità clinica sempre al medico</div>
+    <div class="compliance-item" data-i18n="compliance.c4">Versione beta — feedback attivamente raccolti</div>
+    <div class="compliance-item" data-i18n="compliance.c5">Solo uso da parte di professionisti abilitati</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div style="position:relative;z-index:1">
+    <div class="section-label" style="text-align:center" data-i18n="cta.label">Inizia adesso</div>
+    <h2 class="serif reveal">
+      <span data-i18n="cta.h2a">Pronto per la tua</span><br>
+      <span data-i18n="cta.h2b">prima VMG</span>
+      <em data-i18n="cta.h2c"> digitale?</em>
+    </h2>
+    <p class="reveal" data-i18n="cta.desc">Accedi gratuitamente, nessuna registrazione.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap" class="reveal">
+      <a href="/app.html" class="btn-primary" data-i18n="cta.btn1">Apri la Dashboard</a>
+      <a href="/geriscope-cga-v2.html" class="btn-outline" data-i18n="cta.btn2">Prova il modulo VMG</a>
+    </div>
+    <div class="cta-note reveal" data-i18n="cta.note">Gratis · Nessun account · Dati locali nel tuo browser</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand-name">Geri<em>Scope</em></div>
+    <div class="footer-copy" data-i18n="footer.copy">© 2025 GeriScope · Solo uso da parte di professionisti sanitari abilitati</div>
+  </div>
+  <div class="footer-links">
+    <a href="/app.html" data-i18n="footer.links1">Dashboard</a>
+    <a href="/geriscope-cga-v2.html" data-i18n="footer.links2">Modulo VMG</a>
+  </div>
+  <div class="footer-disc" data-i18n="footer.disc">Strumento di documentazione clinica. Non dispositivo medico.</div>
+</footer>
+
+<script>
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Fix steps "titleem" — needs special handling for nested key
+document.addEventListener('DOMContentLoaded',()=>{
+  const lang = window.GS_getLang ? window.GS_getLang() : 'it';
+  const stepsTitle = document.querySelector('[data-i18n="steps.titleem.it"]');
+  if(stepsTitle && window.GERISCOPE_I18N){
+    const T = window.GERISCOPE_I18N;
+    if(T.steps && T.steps.title && T.steps.title[lang]){
+      stepsTitle.setAttribute('data-i18n-custom','steps-titleem');
+    }
   }
-  return(
-    <div style={{position:"fixed",inset:0,zIndex:99999,
-      background:"rgba(10,18,16,.93)",backdropFilter:"blur(6px)",
-      display:"flex",alignItems:"center",justifyContent:"center",
-      padding:"20px",fontFamily:"'DM Sans',sans-serif"}}>
-      <div style={{background:"#fff",borderRadius:6,width:"100%",maxWidth:620,
-        maxHeight:"90vh",display:"flex",flexDirection:"column",
-        boxShadow:"0 30px 80px rgba(0,0,0,.5)"}}>
-        <div style={{background:"#1a2e28",borderRadius:"6px 6px 0 0",
-          padding:"20px 26px",flexShrink:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:3}}>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-              stroke="#c9a84c" strokeWidth="2" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span style={{fontFamily:"'Cormorant Garamond',serif",
-              fontSize:19,fontWeight:600,color:"#fff"}}>
-              Avviso Importante — Termini d'Uso
-            </span>
-          </div>
-          <div style={{fontSize:9,color:"rgba(255,255,255,.35)",
-            fontFamily:"'DM Mono',monospace",letterSpacing:"0.08em"}}>
-            GERISCOPE CGA PLATFORM · VERSIONE BETA · LEGGERE CON ATTENZIONE
-          </div>
-        </div>
-        <div onScroll={handleScroll}
-          style={{overflowY:"auto",padding:"20px 26px",flex:1,
-            fontSize:12,lineHeight:1.75,color:"#222"}}>
-          <div style={{background:"#fff8e1",border:"1.5px solid #c9a84c",
-            borderRadius:4,padding:"13px 15px",marginBottom:14}}>
-            <div style={{fontWeight:700,color:"#7d5f00",fontSize:12.5,marginBottom:5,
-              display:"flex",alignItems:"center",gap:6}}>
-              ⚠️ GeriScope NON è un dispositivo medico
-            </div>
-            <p style={{margin:0,color:"#555"}}>
-              GeriScope è uno <strong>strumento di supporto alla documentazione
-              clinica e organizzativa</strong>, destinato esclusivamente a professionisti
-              sanitari abilitati. Non è classificato come dispositivo medico ai sensi
-              del Regolamento UE 2017/745 (MDR) e non ha ottenuto marcatura CE
-              come dispositivo medico.
-            </p>
-          </div>
-          <div style={{background:"#fce8e8",border:"1.5px solid #c0392b",
-            borderRadius:4,padding:"13px 15px",marginBottom:14}}>
-            <div style={{fontWeight:700,color:"#922b21",fontSize:12.5,marginBottom:5,
-              display:"flex",alignItems:"center",gap:6}}>
-              🚫 Non sostituisce il giudizio clinico del medico
-            </div>
-            <p style={{margin:0,color:"#555"}}>
-              Nessun punteggio, indice prognostico o raccomandazione generata da
-              GeriScope — inclusi MMSE, MoCA, MPI, BRASS, CFS, report IA —
-              deve essere utilizzato come <strong>unico criterio per decisioni
-              diagnostiche, terapeutiche, prognostiche o di allocazione delle
-              risorse sanitarie</strong>. Ogni decisione clinica rimane di esclusiva
-              competenza e responsabilità del professionista sanitario.
-            </p>
-          </div>
-          <div style={{background:"#eaf4fb",border:"1.5px solid #2980b9",
-            borderRadius:4,padding:"13px 15px",marginBottom:14}}>
-            <div style={{fontWeight:700,color:"#1a5276",fontSize:12.5,marginBottom:5,
-              display:"flex",alignItems:"center",gap:6}}>
-              ℹ️ Limitazioni dello strumento
-            </div>
-            <ul style={{margin:0,paddingLeft:16,color:"#555"}}>
-              <li style={{marginBottom:4}}>
-                I <strong>report generati con IA</strong> hanno carattere puramente
-                orientativo e devono essere verificati e validati dal medico prima
-                di qualsiasi utilizzo clinico o documentale.
-              </li>
-              <li style={{marginBottom:4}}>
-                I <strong>dati sono conservati localmente nel browser</strong> (localStorage):
-                non viene garantita persistenza, sicurezza o conformità normativa
-                per l'archiviazione di dati sanitari sensibili. Non usare come
-                archivio ufficiale di documentazione clinica.
-              </li>
-              <li style={{marginBottom:4}}>
-                Gli <strong>indici prognostici</strong> (MPI, BRASS, CFS) forniscono
-                stime statistiche di popolazione, non previsioni individuali.
-              </li>
-              <li>
-                GeriScope è in <strong>versione beta</strong>: potrebbero essere
-                presenti imprecisioni. Segnalare anomalie agli sviluppatori.
-              </li>
-            </ul>
-          </div>
-          <div style={{background:"#eafaf1",border:"1.5px solid #27ae60",
-            borderRadius:4,padding:"13px 15px",marginBottom:14}}>
-            <div style={{fontWeight:700,color:"#1e8449",fontSize:12.5,marginBottom:5,
-              display:"flex",alignItems:"center",gap:6}}>
-              🔒 Privacy e GDPR
-            </div>
-            <p style={{margin:0,color:"#555"}}>
-              L'inserimento di dati identificativi di pazienti è <strong>responsabilità
-              esclusiva dell'operatore sanitario</strong>, che deve disporre di idonea
-              base giuridica ai sensi del GDPR (Reg. UE 2016/679) e del D.Lgs. 196/2003
-              e ss.mm.ii. Nella versione attuale GeriScope non trasmette dati a server
-              esterni.
-            </p>
-          </div>
-          <div style={{background:"#f4f4f4",border:"1px solid #ddd",
-            borderRadius:4,padding:"12px 15px",fontSize:11,color:"#777",marginBottom:6}}>
-            <strong style={{color:"#444"}}>Esclusione di responsabilità:</strong>{" "}
-            Gli sviluppatori di GeriScope declinano ogni responsabilità per danni
-            diretti o indiretti derivanti dall'uso dello strumento, inclusi errori
-            di calcolo o decisioni cliniche basate sui risultati generati.
-            L'uso di GeriScope implica l'accettazione integrale dei presenti termini.
-          </div>
-          <div style={{fontSize:9.5,color:"#bbb",textAlign:"center",marginTop:6,
-            fontFamily:"'DM Mono',monospace"}}>
-            {scrolled ? "✓ Testo letto — spuntare la casella per procedere" :
-              "↓ Scorrere fino in fondo per abilitare l'accettazione"}
-          </div>
-        </div>
-        <div style={{padding:"14px 26px",borderTop:"1px solid #eee",
-          background:"#fafafa",borderRadius:"0 0 6px 6px",flexShrink:0}}>
-          <label style={{display:"flex",alignItems:"flex-start",gap:9,
-            cursor:scrolled?"pointer":"default",marginBottom:12}}>
-            <input type="checkbox" checked={checked}
-              onChange={e=>setChecked(e.target.checked)}
-              disabled={!scrolled}
-              style={{marginTop:2,width:15,height:15,
-                accentColor:"#3d6b5e",flexShrink:0,
-                cursor:scrolled?"pointer":"not-allowed"}}/>
-            <span style={{fontSize:11.5,color:scrolled?"#222":"#aaa",lineHeight:1.55}}>
-              Ho letto e compreso le limitazioni di GeriScope. Sono un professionista
-              sanitario abilitato e utilizzo questo strumento esclusivamente a supporto
-              della documentazione clinica, nel rispetto del mio giudizio professionale
-              e della normativa vigente.
-            </span>
-          </label>
-          <button disabled={!checked||!scrolled} onClick={onAccept}
-            style={{width:"100%",padding:"11px",
-              background:checked&&scrolled?"#3d6b5e":"#ccc",
-              color:"white",border:"none",borderRadius:3,
-              cursor:checked&&scrolled?"pointer":"not-allowed",
-              fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",
-              transition:"background .2s"}}>
-            {!scrolled?"↓ Scorrere il testo per continuare":
-             !checked ?"☐ Spuntare la casella per continuare":
-                       "✓ Accetto — Accedi a GeriScope"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DisclaimerFooter(){
-  return(
-    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:9000,
-      background:"rgba(10,18,16,.88)",backdropFilter:"blur(4px)",
-      padding:"5px 20px",display:"flex",alignItems:"center",
-      justifyContent:"space-between",gap:16,flexShrink:0}}>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
-          stroke="#c9a84c" strokeWidth="2" strokeLinecap="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <span style={{fontSize:10,color:"rgba(255,255,255,.55)",
-          fontFamily:"'DM Mono',monospace",letterSpacing:"0.04em"}}>
-          SOLO USO PROFESSIONALE · Non dispositivo medico (MDR 2017/745) ·
-          Non sostituisce il giudizio clinico · Dati locali, non certificati per archivio clinico ufficiale
-        </span>
-      </div>
-      <span style={{fontSize:9,color:"rgba(255,255,255,.25)",
-        fontFamily:"'DM Mono',monospace",whiteSpace:"nowrap",letterSpacing:"0.06em"}}>
-        GeriScope β
-      </span>
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard/>);
+});
 </script>
 </body>
 </html>
