@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="it" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeriScope — La Valutazione Geriatrica Completa entra nel digitale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:#1a2820; --sage:#3d6b5e; --sage-lt:#5a9080; --sage-dk:#2a4d43;
+  --sage-pale:#eef4f1; --gold:#b8953a; --cream:#f7f2e8; --cream-dk:#ede6d6;
+  --warm-gray:#8a8278; --border:#d8d0c0; --white:#ffffff;
+}
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--ink); overflow-x:hidden; }
+.serif { font-family:'Instrument Serif',Georgia,serif; }
+.mono  { font-family:'DM Mono',monospace; }
+
+/* LANG SWITCHER */
+#lang-switcher {
+  display:flex; gap:4px; flex-wrap:wrap;
+}
+.lang-btn {
+  background:none; border:none; cursor:pointer;
+  font-size:16px; padding:3px 5px; border-radius:4px;
+  opacity:.5; transition:opacity .15s, background .15s;
+  line-height:1;
+}
+.lang-btn:hover { opacity:.85; background:rgba(61,107,94,.08); }
+.lang-btn.active { opacity:1; background:rgba(61,107,94,.12); }
+
+/* NAV */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  padding:14px 48px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  background:rgba(247,242,232,.93); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.nav-brand-name { font-family:'Instrument Serif',Georgia,serif; font-size:19px; color:var(--ink); }
+.nav-brand-name em { color:var(--sage); font-style:italic; }
+.nav-brand-sub { font-family:'DM Mono',monospace; font-size:7px; color:var(--gold); letter-spacing:.14em; margin-top:1px; }
+.nav-center { display:flex; align-items:center; gap:28px; }
+.nav-link { font-size:12.5px; color:var(--warm-gray); text-decoration:none; letter-spacing:.02em; transition:color .2s; }
+.nav-link:hover { color:var(--ink); }
+.nav-right { display:flex; align-items:center; gap:14px; }
+.btn-nav { padding:8px 18px; background:var(--sage); color:#fff; border:none; border-radius:2px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; letter-spacing:.04em; text-decoration:none; transition:background .2s, transform .15s; display:inline-block; }
+.btn-nav:hover { background:var(--sage-dk); transform:translateY(-1px); }
+
+/* HERO */
+.hero { position:relative; min-height:100vh; display:grid; grid-template-columns:1fr 1fr; align-items:center; padding:120px 52px 80px; gap:64px; overflow:hidden; }
+.hero-bg-shape { position:absolute; top:-100px; right:-200px; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle,rgba(61,107,94,.08) 0%,transparent 70%); pointer-events:none; }
+.hero-bg-lines { position:absolute; inset:0; overflow:hidden; opacity:.4; pointer-events:none; background-image:linear-gradient(rgba(61,107,94,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(61,107,94,.06) 1px,transparent 1px); background-size:48px 48px; mask-image:radial-gradient(ellipse 60% 80% at 70% 50%,black 0%,transparent 100%); }
+.hero-left { position:relative; z-index:1; }
+.hero-eyebrow { display:inline-flex; align-items:center; gap:8px; padding:4px 12px; background:var(--sage-pale); border:1px solid rgba(61,107,94,.2); border-radius:20px; margin-bottom:28px; animation:fadeUp .7s ease both; }
+.hero-eyebrow span { font-family:'DM Mono',monospace; font-size:9px; color:var(--sage); letter-spacing:.1em; }
+.hero-eyebrow::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--sage-lt); animation:blink 2.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.hero h1 { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(38px,4.5vw,64px); font-weight:400; line-height:1.1; letter-spacing:-.01em; color:var(--ink); margin-bottom:10px; animation:fadeUp .7s .08s ease both; }
+.hero h1 strong { font-weight:700; }
+.hero h1 em { color:var(--sage); font-style:italic; }
+.hero-subtitle { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(16px,2vw,22px); font-style:italic; color:var(--warm-gray); margin-bottom:32px; animation:fadeUp .7s .16s ease both; }
+.hero-desc { font-size:14px; color:var(--warm-gray); line-height:1.85; max-width:460px; margin-bottom:40px; animation:fadeUp .7s .24s ease both; }
+.hero-actions { display:flex; gap:12px; flex-wrap:wrap; animation:fadeUp .7s .32s ease both; }
+.btn-primary { padding:13px 32px; background:var(--sage); color:#fff; border:none; border-radius:2px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:500; letter-spacing:.03em; text-decoration:none; transition:all .2s; display:inline-block; }
+.btn-primary:hover { background:var(--sage-dk); transform:translateY(-2px); box-shadow:0 10px 28px rgba(61,107,94,.25); }
+.btn-outline { padding:13px 28px; background:transparent; color:var(--sage); border:1.5px solid rgba(61,107,94,.35); border-radius:2px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; letter-spacing:.03em; text-decoration:none; transition:all .2s; display:inline-block; }
+.btn-outline:hover { border-color:var(--sage); background:var(--sage-pale); }
+.hero-stats { display:flex; gap:40px; margin-top:52px; padding-top:36px; border-top:1px solid var(--border); animation:fadeUp .7s .4s ease both; }
+.hero-stat .n { font-family:'Instrument Serif',Georgia,serif; font-size:36px; font-weight:400; color:var(--ink); line-height:1; }
+.hero-stat .n span { color:var(--sage); }
+.hero-stat .l { font-size:10px; color:var(--warm-gray); letter-spacing:.08em; text-transform:uppercase; font-family:'DM Mono',monospace; margin-top:5px; }
+
+/* MOCKUP */
+.hero-right { position:relative; z-index:1; animation:fadeUp .7s .2s ease both; }
+.mockup-shell { background:#fff; border:1px solid var(--border); border-radius:8px; box-shadow:0 24px 80px rgba(26,40,32,.12),0 4px 12px rgba(26,40,32,.06); overflow:hidden; }
+.mockup-bar { background:#f0ebe0; padding:9px 14px; display:flex; align-items:center; gap:7px; border-bottom:1px solid var(--border); }
+.mdot { width:9px; height:9px; border-radius:50%; }
+.mockup-addr { flex:1; margin:0 10px; background:#fff; border:1px solid var(--border); border-radius:3px; padding:3px 10px; font-family:'DM Mono',monospace; font-size:9.5px; color:var(--warm-gray); text-align:center; }
+.mockup-content { display:grid; grid-template-columns:190px 1fr; min-height:360px; }
+.mock-sidebar { background:var(--ink); padding:18px 14px; }
+.mock-logo-text { font-family:'Instrument Serif',Georgia,serif; font-size:16px; color:#fff; }
+.mock-logo-text em { color:#5a9080; font-style:italic; }
+.mock-org { font-family:'DM Mono',monospace; font-size:7px; color:rgba(255,255,255,.25); letter-spacing:.1em; padding-left:25px; margin-bottom:18px; }
+.mock-item { padding:7px 10px; border-radius:2px; font-size:11px; color:rgba(255,255,255,.35); display:flex; align-items:center; gap:8px; border-left:2px solid transparent; margin-bottom:2px; }
+.mock-item.on { background:rgba(61,107,94,.22); color:#fff; border-left-color:#5a9080; }
+.mock-main { padding:20px 22px; background:var(--cream); }
+.mock-title { font-family:'Instrument Serif',Georgia,serif; font-size:18px; color:var(--ink); margin-bottom:14px; }
+.mock-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+.mock-card { background:#fff; border:1px solid var(--border); border-radius:2px; padding:10px; }
+.mock-card .cv { font-family:'Instrument Serif',Georgia,serif; font-size:22px; color:var(--ink); }
+.mock-card .cl { font-size:8px; color:var(--warm-gray); letter-spacing:.06em; margin-top:2px; }
+.mock-table { background:#fff; border:1px solid var(--border); border-radius:2px; overflow:hidden; }
+.mock-thead { display:grid; grid-template-columns:1.8fr 1.4fr .7fr .9fr; padding:7px 12px; background:var(--cream-dk); border-bottom:1px solid var(--border); }
+.mock-thead span { font-size:7.5px; color:var(--warm-gray); letter-spacing:.08em; text-transform:uppercase; font-family:'DM Mono',monospace; }
+.mock-row { display:grid; grid-template-columns:1.8fr 1.4fr .7fr .9fr; padding:9px 12px; border-bottom:1px solid #f0ebe0; align-items:center; }
+.mock-row span { font-size:10px; color:var(--ink); }
+.mbadge { display:inline-block; padding:2px 6px; border-radius:8px; font-size:8px; font-weight:500; }
+
+/* DIVIDER */
+.divider-bar { background:var(--sage); padding:16px 52px; display:flex; align-items:center; gap:40px; flex-wrap:wrap; }
+.divider-item { display:flex; align-items:center; gap:10px; font-size:11.5px; color:rgba(255,255,255,.75); font-family:'DM Mono',monospace; letter-spacing:.05em; }
+.divider-item::before { content:'—'; color:rgba(255,255,255,.3); }
+
+/* SECTIONS */
+.section { padding:96px 52px; position:relative; z-index:1; }
+.section-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.14em; color:var(--sage); text-transform:uppercase; margin-bottom:14px; }
+.section-title { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(30px,4vw,50px); font-weight:400; line-height:1.1; margin-bottom:14px; }
+.section-title em { color:var(--sage); font-style:italic; }
+.section-desc { font-size:14px; color:var(--warm-gray); max-width:540px; line-height:1.85; margin-bottom:52px; }
+
+/* DOMAINS */
+.domains-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+.domain-card { background:#fff; padding:26px 24px 22px; transition:background .2s; }
+.domain-card:hover { background:var(--sage-pale); }
+.domain-icon { font-size:20px; margin-bottom:12px; }
+.domain-name { font-family:'Instrument Serif',Georgia,serif; font-size:19px; margin-bottom:6px; color:var(--ink); }
+.domain-note { font-size:12px; color:var(--warm-gray); line-height:1.65; margin-bottom:14px; }
+.domain-scales { display:flex; flex-wrap:wrap; gap:5px; }
+.scale-tag { font-family:'DM Mono',monospace; font-size:8.5px; letter-spacing:.05em; padding:3px 7px; background:var(--sage-pale); border:1px solid rgba(61,107,94,.2); border-radius:2px; color:var(--sage); }
+
+/* FEATURE ROWS */
+.feature-row { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; padding:72px 52px; border-top:1px solid var(--border); }
+.feature-row.flip .feature-visual { order:-1; }
+.feature-num { font-family:'Instrument Serif',Georgia,serif; font-size:80px; color:rgba(61,107,94,.1); line-height:1; margin-bottom:8px; }
+.feature-title { font-family:'Instrument Serif',Georgia,serif; font-size:28px; margin-bottom:12px; color:var(--ink); }
+.feature-desc { font-size:13.5px; color:var(--warm-gray); line-height:1.8; margin-bottom:20px; }
+.feature-list { display:flex; flex-direction:column; gap:8px; }
+.feature-list li { display:flex; align-items:flex-start; gap:10px; font-size:12.5px; color:var(--warm-gray); line-height:1.6; list-style:none; }
+.feature-list li::before { content:'✓'; color:var(--sage); font-weight:600; margin-top:1px; flex-shrink:0; }
+.feature-visual { background:#fff; border:1px solid var(--border); border-radius:6px; padding:26px; box-shadow:0 8px 32px rgba(26,40,32,.07); }
+.fv-label { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:.12em; color:var(--sage); text-transform:uppercase; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.ai-sect-head { font-family:'Instrument Serif',Georgia,serif; font-size:12px; color:var(--sage); letter-spacing:.06em; text-transform:uppercase; margin:12px 0 5px; }
+.ai-text { font-size:11.5px; color:var(--warm-gray); line-height:1.7; }
+.ai-scores { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+.ai-sc { background:var(--sage-pale); border:1px solid rgba(61,107,94,.15); border-radius:2px; padding:8px 12px; }
+.ai-sc .sv { font-family:'Instrument Serif',Georgia,serif; font-size:22px; color:var(--ink); }
+.ai-sc .sl { font-size:8.5px; color:var(--warm-gray); font-family:'DM Mono',monospace; letter-spacing:.05em; margin-top:2px; }
+.brand-preview { background:var(--ink); border-radius:4px; padding:14px 16px; margin-bottom:14px; }
+.brand-name { font-family:'Instrument Serif',Georgia,serif; font-size:16px; color:#fff; }
+.brand-name em { color:#5a9080; font-style:italic; }
+.brand-org { font-size:11px; color:rgba(255,255,255,.7); margin-top:5px; }
+.brand-dept { font-size:9px; color:rgba(255,255,255,.35); font-family:'DM Mono',monospace; letter-spacing:.06em; margin-top:2px; }
+.brand-inputs { display:flex; flex-direction:column; gap:8px; }
+.brand-input-label { font-size:9px; font-family:'DM Mono',monospace; color:var(--sage); letter-spacing:.06em; margin-bottom:2px; }
+.brand-input { border:1px solid var(--border); border-radius:2px; padding:7px 10px; font-size:12px; color:var(--sage); }
+.prog-list { display:flex; flex-direction:column; gap:10px; }
+.prog-item { display:flex; align-items:center; gap:10px; }
+.prog-label { font-size:11px; color:var(--ink); width:80px; flex-shrink:0; font-family:'DM Mono',monospace; }
+.prog-bar { flex:1; height:4px; background:var(--cream-dk); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; background:var(--sage); border-radius:2px; }
+.prog-pct { font-family:'DM Mono',monospace; font-size:9px; color:var(--warm-gray); width:28px; text-align:right; }
+
+/* STEPS */
+.steps-section { padding:96px 52px; background:var(--ink); position:relative; overflow:hidden; }
+.steps-bg { position:absolute; inset:0; opacity:.04; background-image:linear-gradient(rgba(90,144,128,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(90,144,128,.5) 1px,transparent 1px); background-size:52px 52px; }
+.steps-section .section-label { color:var(--sage-lt); }
+.steps-section .section-title { color:var(--cream); }
+.steps-section .section-title em { color:var(--sage-lt); }
+.steps-grid { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid rgba(255,255,255,.06); border-radius:4px; overflow:hidden; margin-top:52px; }
+.step { padding:32px 26px; border-right:1px solid rgba(255,255,255,.05); position:relative; }
+.step:last-child { border-right:none; }
+.step::after { content:attr(data-n); position:absolute; top:20px; right:20px; font-family:'Instrument Serif',Georgia,serif; font-size:44px; color:rgba(90,144,128,.12); line-height:1; }
+.step-icon { font-size:22px; margin-bottom:14px; }
+.step-title { font-family:'Instrument Serif',Georgia,serif; font-size:18px; color:var(--cream); margin-bottom:8px; }
+.step-desc { font-size:12px; color:rgba(255,255,255,.4); line-height:1.7; }
+
+/* COMPLIANCE */
+.compliance-section { padding:64px 52px; background:var(--cream-dk); border-top:1px solid var(--border); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:64px; flex-wrap:wrap; }
+.compliance-left { flex:1; min-width:260px; }
+.compliance-left h3 { font-family:'Instrument Serif',Georgia,serif; font-size:24px; color:var(--ink); margin-bottom:6px; }
+.compliance-left p { font-size:12.5px; color:var(--warm-gray); line-height:1.7; max-width:380px; }
+.compliance-right { display:flex; flex-direction:column; gap:10px; }
+.compliance-item { display:flex; align-items:flex-start; gap:10px; font-size:11.5px; color:var(--warm-gray); font-family:'DM Mono',monospace; letter-spacing:.04em; }
+.compliance-item::before { content:'✓'; color:var(--sage); font-size:13px; font-weight:bold; flex-shrink:0; }
+
+/* CTA */
+.cta-section { padding:120px 52px; text-align:center; position:relative; overflow:hidden; }
+.cta-bg { position:absolute; inset:0; background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(61,107,94,.07) 0%,transparent 70%); }
+.cta-section h2 { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(34px,5vw,60px); line-height:1.1; margin-bottom:16px; }
+.cta-section h2 em { color:var(--sage); font-style:italic; }
+.cta-section p { font-size:14px; color:var(--warm-gray); max-width:420px; margin:0 auto 36px; line-height:1.8; }
+.cta-note { font-size:10.5px; color:var(--warm-gray); margin-top:14px; font-family:'DM Mono',monospace; letter-spacing:.06em; }
+
+/* FOOTER */
+footer { background:var(--ink); padding:48px 52px; display:grid; grid-template-columns:1fr auto auto; align-items:end; gap:40px; }
+.footer-brand-name { font-family:'Instrument Serif',Georgia,serif; font-size:18px; color:rgba(255,255,255,.5); }
+.footer-brand-name em { color:var(--sage-lt); font-style:italic; }
+.footer-copy { font-size:9.5px; color:rgba(255,255,255,.2); font-family:'DM Mono',monospace; letter-spacing:.04em; margin-top:6px; line-height:1.7; }
+.footer-links { display:flex; gap:24px; align-items:center; }
+.footer-links a { font-size:11px; color:rgba(255,255,255,.3); text-decoration:none; font-family:'DM Mono',monospace; letter-spacing:.04em; transition:color .2s; }
+.footer-links a:hover { color:var(--sage-lt); }
+.footer-disc { font-size:9px; color:rgba(255,255,255,.15); font-family:'DM Mono',monospace; letter-spacing:.04em; max-width:260px; line-height:1.6; text-align:right; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+.reveal { opacity:0; transform:translateY(22px); transition:opacity .65s ease,transform .65s ease; }
+.reveal.visible { opacity:1; transform:none; }
+
+/* RTL support */
+html[dir="rtl"] { --text-align: right; }
+html[dir="rtl"] .hero-bg-shape { right:auto; left:-200px; }
+html[dir="rtl"] .feature-row.flip .feature-visual { order:1; }
+html[dir="rtl"] .feature-list li::before { margin-right:0; }
+html[dir="rtl"] .footer-disc { text-align:left; }
+html[dir="rtl"] .divider-item::before { display:none; }
+html[dir="rtl"] .compliance-item::before { margin-left:0; }
+
+@media(max-width:900px){
+  nav { padding:12px 20px; }
+  .nav-center { display:none; }
+  .hero { grid-template-columns:1fr; padding:100px 20px 60px; gap:32px; }
+  .hero-right { display:none; }
+  .domains-grid { grid-template-columns:1fr; }
+  .feature-row, .feature-row.flip { grid-template-columns:1fr; gap:28px; padding:48px 20px; }
+  .feature-row.flip .feature-visual { order:0; }
+  .steps-grid { grid-template-columns:1fr 1fr; }
+  .section, .steps-section, .cta-section { padding:60px 20px; }
+  .compliance-section { padding:44px 20px; gap:28px; }
+  .divider-bar { padding:14px 20px; gap:20px; }
+  footer { grid-template-columns:1fr; padding:32px 20px; }
+  .footer-disc { text-align:left; }
+  #lang-switcher .lang-btn { font-size:18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- i18n engine -->
+<script src="./i18n.js"></script>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 22 22" style="width:22px;height:22px">
+      <circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(61,107,94,.4)" stroke-width="1"/>
+      <circle cx="11" cy="11" r="5.5" fill="none" stroke="rgba(61,107,94,.55)" stroke-width=".8"/>
+      <circle cx="11" cy="11" r="2" fill="#3d6b5e"/>
+      <line x1="1.5" y1="11" x2="20.5" y2="11" stroke="rgba(61,107,94,.25)" stroke-width=".6"/>
+      <line x1="11" y1="1.5" x2="11" y2="20.5" stroke="rgba(61,107,94,.25)" stroke-width=".6"/>
+    </svg>
+    <div class="nav-brand">
+      <div class="nav-brand-name">Geri<em>Scope</em></div>
+      <div class="nav-brand-sub" data-i18n="nav.badge">CGA PLATFORM</div>
+    </div>
+  </a>
+  <div class="nav-center">
+    <a href="#scale" class="nav-link" data-i18n="nav.scales">Scale cliniche</a>
+    <a href="#funzionalita" class="nav-link" data-i18n="nav.features">Funzionalità</a>
+    <a href="#come-funziona" class="nav-link" data-i18n="nav.howto">Come funziona</a>
+  </div>
+  <div class="nav-right">
+    <div id="lang-switcher"></div>
+    <a href="./index.html" class="btn-nav" data-i18n="nav.access">Accedi →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-shape"></div>
+  <div class="hero-bg-lines"></div>
+  <div class="hero-left">
+    <div class="hero-eyebrow"><span data-i18n="hero.eyebrow">STRUMENTO CLINICO PROFESSIONALE — BETA</span></div>
+    <h1 class="serif">
+      <span data-i18n="hero.h1a">La Valutazione</span><br>
+      <span data-i18n="hero.h1b">Geriatrica Completa</span><br>
+      <em data-i18n="hero.h1c">entra nel digitale.</em>
+    </h1>
+    <p class="hero-subtitle" data-i18n="hero.subtitle">Per chi cura. Per chi vuole capire.</p>
+    <p class="hero-desc" data-i18n="hero.desc">GeriScope riunisce 24 scale geriatriche validate in un unico flusso digitale.</p>
+    <div class="hero-actions">
+      <a href="./index.html" class="btn-primary" data-i18n="hero.btn1">Apri la Dashboard</a>
+      <a href="./geriscope-cga-v2.html" class="btn-outline" data-i18n="hero.btn2">Prova il modulo VMG</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="n">24<span>+</span></div><div class="l" data-i18n="hero.stat1l">Scale validate</div></div>
+      <div class="hero-stat"><div class="n">7</div><div class="l" data-i18n="hero.stat2l">Domini clinici</div></div>
+      <div class="hero-stat"><div class="n">AI</div><div class="l" data-i18n="hero.stat3l">Report integrato</div></div>
+      <div class="hero-stat"><div class="n">€<span>0</span></div><div class="l" data-i18n="hero.stat4l">Costo attuale</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="mockup-shell">
+      <div class="mockup-bar">
+        <div class="mdot" style="background:#e04b3a"></div>
+        <div class="mdot" style="background:#e0a83a"></div>
+        <div class="mdot" style="background:#3aae5c"></div>
+        <div class="mockup-addr">geriscope.vercel.app</div>
+      </div>
+      <div class="mockup-content">
+        <div class="mock-sidebar">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+            <svg viewBox="0 0 22 22" style="width:14px;height:14px;flex-shrink:0"><circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(90,144,128,.5)" stroke-width="1.2"/><circle cx="11" cy="11" r="2" fill="#5a9080"/></svg>
+            <div class="mock-logo-text">Geri<em>Scope</em></div>
+          </div>
+          <div class="mock-org">U.O.C. GERIATRIA</div>
+          <div class="mock-item on">◎ &nbsp;Dashboard</div>
+          <div class="mock-item">◈ &nbsp;VMG</div>
+          <div class="mock-item">◉ &nbsp;Settings</div>
+        </div>
+        <div class="mock-main">
+          <div class="mock-title">Patient Dashboard</div>
+          <div class="mock-cards">
+            <div class="mock-card"><div class="cv">12</div><div class="cl">TOTAL</div></div>
+            <div class="mock-card"><div class="cv" style="color:#b8953a">4</div><div class="cl">PENDING</div></div>
+            <div class="mock-card"><div class="cv" style="color:#c0392b">3</div><div class="cl">ALERTS</div></div>
+            <div class="mock-card"><div class="cv" style="color:#3d6b5e">5</div><div class="cl">CFS ≥5</div></div>
+          </div>
+          <div class="mock-table">
+            <div class="mock-thead"><span>Patient</span><span>Diagnosis</span><span>CFS</span><span>CGA</span></div>
+            <div class="mock-row">
+              <span style="font-weight:500">Rossi, Mario</span>
+              <span style="color:#8a8278;font-size:9px">HT, MCI</span>
+              <span><span class="mbadge" style="background:rgba(184,149,58,.12);color:#b8953a">4</span></span>
+              <span><span class="mbadge" style="background:rgba(61,107,94,.1);color:#3d6b5e">Done</span></span>
+            </div>
+            <div class="mock-row">
+              <span style="font-weight:500">Bianchi, Anna</span>
+              <span style="color:#8a8278;font-size:9px">AF, Osteoporosis</span>
+              <span><span class="mbadge" style="background:rgba(192,57,43,.08);color:#c0392b">5</span></span>
+              <span><span class="mbadge" style="background:rgba(184,149,58,.1);color:#b8953a">Ongoing</span></span>
+            </div>
+            <div class="mock-row">
+              <span style="font-weight:500">Ferrari, G.</span>
+              <span style="color:#8a8278;font-size:9px">Parkinson</span>
+              <span><span class="mbadge" style="background:rgba(192,57,43,.08);color:#c0392b">6</span></span>
+              <span><span class="mbadge" style="background:rgba(107,123,126,.1);color:#6b7b7e">Pending</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="divider-bar">
+  <div class="divider-item" data-i18n="divider.d1">Nessuna installazione</div>
+  <div class="divider-item" data-i18n="divider.d2">Dati locali nel browser</div>
+  <div class="divider-item" data-i18n="divider.d3">Scoring automatico</div>
+  <div class="divider-item" data-i18n="divider.d4">Report AI integrato</div>
+  <div class="divider-item" data-i18n="divider.d5">Personalizzabile per ogni struttura</div>
+</div>
+
+<!-- DOMAINS -->
+<section class="section" id="scale">
+  <div class="section-label" data-i18n="domains.label">Scale cliniche validate</div>
+  <h2 class="section-title reveal">
+    <span data-i18n="domains.title">Ogni dominio della</span>
+    <em data-i18n="domains.titleem"> VMG</em><span data-i18n="domains.titles2">, finalmente in un posto solo</span>
+  </h2>
+  <p class="section-desc reveal" data-i18n="domains.desc">Tutte le scale della Valutazione Geriatrica Completa in un flusso strutturato.</p>
+  <div class="domains-grid reveal">
+    <div class="domain-card"><div class="domain-icon">🧠</div><div class="domain-name" data-i18n="domains.d1name">Cognitivo</div><div class="domain-note" data-i18n="domains.d1note">Screening demenza, delirium e depressione.</div><div class="domain-scales"><span class="scale-tag">MMSE</span><span class="scale-tag">MoCA</span><span class="scale-tag">Clock Drawing</span><span class="scale-tag">GDS-15</span><span class="scale-tag">CAM</span></div></div>
+    <div class="domain-card"><div class="domain-icon">🦾</div><div class="domain-name" data-i18n="domains.d2name">Funzionale</div><div class="domain-note" data-i18n="domains.d2note">Autonomia, mobilità, cadute, performance fisica.</div><div class="domain-scales"><span class="scale-tag">Barthel</span><span class="scale-tag">ADL Katz</span><span class="scale-tag">IADL Lawton</span><span class="scale-tag">SPPB</span><span class="scale-tag">TUG</span><span class="scale-tag">Tinetti</span></div></div>
+    <div class="domain-card"><div class="domain-icon">💊</div><div class="domain-name" data-i18n="domains.d3name">Clinico</div><div class="domain-note" data-i18n="domains.d3note">Comorbilità, politerapia Beers, dolore, nutrizione.</div><div class="domain-scales"><span class="scale-tag">CIRS</span><span class="scale-tag">Charlson</span><span class="scale-tag">Beers</span><span class="scale-tag">MNA-SF</span><span class="scale-tag">NRS Pain</span><span class="scale-tag">Handgrip</span></div></div>
+    <div class="domain-card"><div class="domain-icon">🤝</div><div class="domain-name" data-i18n="domains.d4name">Sociale & QoL</div><div class="domain-note" data-i18n="domains.d4note">Rete sociale, caregiver, sonno, continenza, Braden.</div><div class="domain-scales"><span class="scale-tag">Rete Sociale</span><span class="scale-tag">Zarit</span><span class="scale-tag">PSQI</span><span class="scale-tag">Braden</span><span class="scale-tag">Disfagia</span></div></div>
+    <div class="domain-card"><div class="domain-icon">📈</div><div class="domain-name" data-i18n="domains.d5name">Prognostico</div><div class="domain-note" data-i18n="domains.d5note">Dimissione complessa e mortalità breve-medio termine.</div><div class="domain-scales"><span class="scale-tag">BRASS</span><span class="scale-tag">MPI (Pilotto 2008)</span><span class="scale-tag">CFS</span></div></div>
+    <div class="domain-card"><div class="domain-icon">📄</div><div class="domain-name" data-i18n="domains.d6name">Report AI</div><div class="domain-note" data-i18n="domains.d6note">Sintesi narrativa AI, tutti i punteggi VMG integrati.</div><div class="domain-scales"><span class="scale-tag">Sintesi cognitiva</span><span class="scale-tag">Profilo funzionale</span><span class="scale-tag">MPI+CFS+BRASS</span></div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div id="funzionalita">
+  <div class="feature-row reveal">
+    <div>
+      <div class="feature-num" data-i18n="features.f1num">01</div>
+      <div class="feature-title" data-i18n="features.f1title">Report clinico generato da AI</div>
+      <p class="feature-desc" data-i18n="features.f1desc">Al termine della VMG, GeriScope produce automaticamente una sintesi narrativa strutturata.</p>
+      <ul class="feature-list">
+        <li data-i18n="features.f1li1">Sintetizza MMSE, MoCA, ADL, IADL, MNA, Barthel, MPI, BRASS e CFS</li>
+        <li data-i18n="features.f1li2">Orientato all'azione: raccomandazioni terapeutiche e di follow-up</li>
+        <li data-i18n="features.f1li3">Puramente orientativo — decisione clinica sempre al professionista</li>
+      </ul>
+    </div>
+    <div class="feature-visual">
+      <div class="fv-label">AI Report — Rossi Mario · 78y</div>
+      <div class="ai-sect-head" data-i18n="features.f1li1" style="font-size:10px">Sintesi cognitiva</div>
+      <div class="ai-text">MMSE 22/30, MoCA 18/30 — MCI amnestica. Clock Drawing: difficoltà visuospaziali...</div>
+      <div class="ai-sect-head" style="font-size:10px">Profilo funzionale</div>
+      <div class="ai-text">IADL 4/8, ADL 5/6. TUG 14s — rischio caduta aumentato...</div>
+      <div class="ai-scores">
+        <div class="ai-sc"><div class="sv">22<span style="font-size:11px;color:#8a8278">/30</span></div><div class="sl">MMSE</div></div>
+        <div class="ai-sc"><div class="sv">0.52</div><div class="sl">MPI-2</div></div>
+        <div class="ai-sc"><div class="sv">4</div><div class="sl">CFS</div></div>
+        <div class="ai-sc"><div class="sv">16</div><div class="sl">BRASS</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-row flip reveal">
+    <div class="feature-visual">
+      <div class="fv-label">Branding — <span data-i18n="features.f2title">La tua struttura</span></div>
+      <div class="brand-preview">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 22 22" style="width:14px;height:14px;flex-shrink:0"><circle cx="11" cy="11" r="9.5" fill="none" stroke="rgba(90,144,128,.5)" stroke-width="1"/><circle cx="11" cy="11" r="2" fill="#5a9080"/></svg>
+          <div class="brand-name">Geri<em>Scope</em></div>
+        </div>
+        <div class="brand-org">Ospedale San Giovanni · U.O.C. Geriatria</div>
+        <div class="brand-dept">DR. MARIO ROSSI — GERIATRA</div>
+      </div>
+      <div class="brand-inputs">
+        <div><div class="brand-input-label">STRUTTURA</div><div class="brand-input">Ospedale San Giovanni</div></div>
+        <div><div class="brand-input-label">REPARTO</div><div class="brand-input">U.O.C. Geriatria</div></div>
+        <div><div class="brand-input-label">MEDICO</div><div class="brand-input">Dr. Mario Rossi</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="feature-num" data-i18n="features.f2num">02</div>
+      <div class="feature-title" data-i18n="features.f2title">La tua struttura, la tua identità</div>
+      <p class="feature-desc" data-i18n="features.f2desc">Personalizza GeriScope con il nome del tuo ospedale, reparto e medico referente.</p>
+    </div>
+  </div>
+
+  <div class="feature-row reveal">
+    <div>
+      <div class="feature-num" data-i18n="features.f3num">03</div>
+      <div class="feature-title" data-i18n="features.f3title">Progresso VMG in tempo reale</div>
+      <p class="feature-desc" data-i18n="features.f3desc">Scegli le scale, traccia il completamento e naviga liberamente tra i domini.</p>
+    </div>
+    <div class="feature-visual">
+      <div class="fv-label">CGA Progress — Rossi Mario</div>
+      <div class="prog-list">
+        <div class="prog-item"><div class="prog-label">MMSE</div><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><div class="prog-pct">100%</div></div>
+        <div class="prog-item"><div class="prog-label">Barthel</div><div class="prog-bar"><div class="prog-fill" style="width:80%"></div></div><div class="prog-pct">80%</div></div>
+        <div class="prog-item"><div class="prog-label">ADL</div><div class="prog-bar"><div class="prog-fill" style="width:67%"></div></div><div class="prog-pct">67%</div></div>
+        <div class="prog-item"><div class="prog-label">MNA-SF</div><div class="prog-bar"><div class="prog-fill" style="width:40%;background:#b8953a"></div></div><div class="prog-pct">40%</div></div>
+        <div class="prog-item"><div class="prog-label">MPI</div><div class="prog-bar"><div class="prog-fill" style="width:25%;background:#b8953a"></div></div><div class="prog-pct">25%</div></div>
+        <div class="prog-item"><div class="prog-label">CFS</div><div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div><div class="prog-pct">0%</div></div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:10px;color:var(--warm-gray);font-family:'DM Mono',monospace;letter-spacing:.05em">CGA OVERALL</span>
+        <span style="font-family:'Instrument Serif',Georgia,serif;font-size:22px;color:var(--sage)">62%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<section class="steps-section" id="come-funziona">
+  <div class="steps-bg"></div>
+  <div style="position:relative;z-index:1;max-width:1100px;margin:0 auto">
+    <div class="section-label" data-i18n="steps.label">Come funziona</div>
+    <h2 class="section-title reveal">
+      <span data-i18n="steps.title">Dal paziente al report</span><br>
+      <em data-i18n="steps.titleem.it">in quattro passi</em>
+    </h2>
+    <div class="steps-grid reveal">
+      <div class="step" data-n="1"><div class="step-icon">👤</div><div class="step-title" data-i18n="steps.s1t">Registra il paziente</div><div class="step-desc" data-i18n="steps.s1d">Inserisci anagrafica, diagnosi e farmaci.</div></div>
+      <div class="step" data-n="2"><div class="step-icon">☑</div><div class="step-title" data-i18n="steps.s2t">Seleziona le scale</div><div class="step-desc" data-i18n="steps.s2d">Scegli le scale nel modulo VMG.</div></div>
+      <div class="step" data-n="3"><div class="step-icon">📋</div><div class="step-title" data-i18n="steps.s3t">Somministra la VMG</div><div class="step-desc" data-i18n="steps.s3d">Scoring automatico per ogni scala.</div></div>
+      <div class="step" data-n="4"><div class="step-icon">📄</div><div class="step-title" data-i18n="steps.s4t">Genera e stampa</div><div class="step-desc" data-i18n="steps.s4d">Report AI e PDF intestato alla tua struttura.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLIANCE -->
+<div class="compliance-section reveal">
+  <div class="compliance-left">
+    <h3 data-i18n="compliance.title">Trasparenza clinica e legale</h3>
+    <p data-i18n="compliance.desc">GeriScope è uno strumento di documentazione a supporto del professionista sanitario.</p>
+  </div>
+  <div class="compliance-right">
+    <div class="compliance-item" data-i18n="compliance.c1">Non classificato come dispositivo medico (MDR 2017/745)</div>
+    <div class="compliance-item" data-i18n="compliance.c2">Nessun dato trasmesso a server esterni</div>
+    <div class="compliance-item" data-i18n="compliance.c3">Responsabilità clinica sempre al medico</div>
+    <div class="compliance-item" data-i18n="compliance.c4">Versione beta — feedback attivamente raccolti</div>
+    <div class="compliance-item" data-i18n="compliance.c5">Solo uso da parte di professionisti abilitati</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div style="position:relative;z-index:1">
+    <div class="section-label" style="text-align:center" data-i18n="cta.label">Inizia adesso</div>
+    <h2 class="serif reveal">
+      <span data-i18n="cta.h2a">Pronto per la tua</span><br>
+      <span data-i18n="cta.h2b">prima VMG</span>
+      <em data-i18n="cta.h2c"> digitale?</em>
+    </h2>
+    <p class="reveal" data-i18n="cta.desc">Accedi gratuitamente, nessuna registrazione.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap" class="reveal">
+      <a href="./index.html" class="btn-primary" data-i18n="cta.btn1">Apri la Dashboard</a>
+      <a href="./geriscope-cga-v2.html" class="btn-outline" data-i18n="cta.btn2">Prova il modulo VMG</a>
+    </div>
+    <div class="cta-note reveal" data-i18n="cta.note">Gratis · Nessun account · Dati locali nel tuo browser</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand-name">Geri<em>Scope</em></div>
+    <div class="footer-copy" data-i18n="footer.copy">© 2025 GeriScope · Solo uso da parte di professionisti sanitari abilitati</div>
+  </div>
+  <div class="footer-links">
+    <a href="./index.html" data-i18n="footer.links1">Dashboard</a>
+    <a href="./geriscope-cga-v2.html" data-i18n="footer.links2">Modulo VMG</a>
+  </div>
+  <div class="footer-disc" data-i18n="footer.disc">Strumento di documentazione clinica. Non dispositivo medico.</div>
+</footer>
+
+<script>
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Fix steps "titleem" — needs special handling for nested key
+document.addEventListener('DOMContentLoaded',()=>{
+  const lang = window.GS_getLang ? window.GS_getLang() : 'it';
+  const stepsTitle = document.querySelector('[data-i18n="steps.titleem.it"]');
+  if(stepsTitle && window.GERISCOPE_I18N){
+    const T = window.GERISCOPE_I18N;
+    if(T.steps && T.steps.title && T.steps.title[lang]){
+      stepsTitle.setAttribute('data-i18n-custom','steps-titleem');
+    }
+  }
+});
+</script>
+</body>
+</html>

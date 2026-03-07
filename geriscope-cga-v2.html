@@ -2416,7 +2416,7 @@ Rispondi SOLO con un JSON nel seguente formato, senza altro testo, senza markdow
 
   return(
     <div className="fu">
-      <ScaleHeader title="Report CGA" subtitle="Compila le note cliniche, poi salva nella dashboard o stampa il PDF." badge="Sintesi"/>
+      <ScaleHeader title={T.reportTitle} subtitle={T.reportSubtitle}" badge="Sintesi"/>
 
       {/* ── AI generate banner ────────────────────────────────────────── */}
       <div style={{background:"linear-gradient(135deg,rgba(201,168,76,.12),rgba(61,107,94,.1))",
@@ -2425,7 +2425,7 @@ Rispondi SOLO con un JSON nel seguente formato, senza altro testo, senza markdow
           <div style={{flex:1}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
               <span style={{fontSize:16}}>✨</span>
-              <span style={{fontSize:13,fontWeight:600,color:"var(--gold)"}}>Genera Report con IA</span>
+              <span style={{fontSize:13,fontWeight:600,color:"var(--gold)"}}>{T.genReport}</span>
             </div>
             <div style={{fontSize:11,color:"var(--gray)",lineHeight:1.55}}>
               Claude analizza tutti i punteggi VMG e redige automaticamente il report clinico con raccomandazioni evidence-based. Il medico potrà modificarlo liberamente.
@@ -2757,7 +2757,8 @@ Rispondi SOLO con un JSON nel seguente formato, senza altro testo, senza markdow
 }
 
 // ─── SCALE SELECTOR ───────────────────────────────────────────────────────
-function Selector({onStart}){
+function Selector({onStart,tFn,switchLang,lang}){
+  const T=tFn||(CGA_TRANS[getCGALang()]||CGA_TRANS.it);
   const [sel,setSel]=useState({"cfs":true,"report":true});
   const toggle=id=>setSel(s=>({...s,[id]:!s[id]}));
   const toggleAll=domain=>{
@@ -2794,7 +2795,7 @@ function Selector({onStart}){
         <div style={{textAlign:"right"}}>
           <div style={{fontSize:13,fontWeight:500,color:"white"}}>ROSSI, Mario · {age(PATIENT.dob)}y · {PATIENT.ward}</div>
           <div className="mono" style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2,letterSpacing:"0.06em"}}>
-            Plan your CGA assessment
+            {T.planSubtitle}
           </div>
         </div>
       </div>
@@ -2803,11 +2804,10 @@ function Selector({onStart}){
       <div style={{flex:1,padding:"36px 40px",maxWidth:900,margin:"0 auto",width:"100%"}}>
         <div style={{marginBottom:28}}>
           <h1 className="serif" style={{fontSize:28,fontWeight:300,marginBottom:6}}>
-            Select your <em style={{color:"var(--sage)"}}>assessment plan</em>
+            {T.planTitle} <em style={{color:"var(--sage)"}}>{T.planTitleEm}</em>
           </h1>
           <p style={{fontSize:13,color:"var(--gray)",lineHeight:1.7}}>
-            Choose the scales relevant to this patient. You can always add or skip scales during the assessment.
-            CFS and Report are pre-selected and recommended for all patients.
+            {T.planDesc}
           </p>
         </div>
 
@@ -2831,7 +2831,7 @@ function Selector({onStart}){
                   style={{padding:"5px 14px",border:"1px solid var(--border)",borderRadius:2,
                     background:"transparent",cursor:"pointer",fontSize:11,color:"var(--gray)",
                     fontFamily:"'DM Sans',sans-serif"}}>
-                  {domain.scales.every(s=>sel[s.id])?"Deselect all":"Select all"}
+                  {domain.scales.every(s=>sel[s.id])?T.deselectAll:T.selectAll}
                 </button>
               </div>
               {/* Scales */}
@@ -2860,7 +2860,7 @@ function Selector({onStart}){
                             color:isSelected?"var(--sage)":"var(--gray)"}}>{scale.time}</span>
                           {isLocked&&<span className="mono" style={{fontSize:8,color:"var(--gold)",
                             padding:"1px 6px",borderRadius:10,
-                            background:"rgba(201,168,76,.1)"}}>RECOMMENDED</span>}
+                            background:"rgba(201,168,76,.1)"}}>{T.recommended}</span>}
                         </div>
                         <div style={{fontSize:11,color:"var(--gray)",lineHeight:1.5}}>{scale.note}</div>
                       </div>
@@ -2879,11 +2879,23 @@ function Selector({onStart}){
         position:"sticky",bottom:0,zIndex:10}}>
         <div>
           <span className="serif" style={{fontSize:22,fontWeight:300}}>{count}</span>
-          <span style={{fontSize:13,color:"var(--gray)",marginLeft:6}}>scales selected</span>
+          <span style={{fontSize:13,color:"var(--gray)",marginLeft:6}}>{T.scalesSelected}</span>
           <span style={{fontSize:12,color:"var(--gray)",marginLeft:16}}>
-            Estimated time: ~{count*4} min
+            {T.estimatedTime} ~{count*4} {T.minUnit}
           </span>
         </div>
+        {switchLang&&<div style={{display:"flex",gap:3,alignItems:"center"}}>
+          {["it","en","zh","fr","es","de","ar","ja","pt"].map(l=>(
+            <button key={l} onClick={()=>switchLang(l)}
+              title={{"it":"Italiano","en":"English","zh":"中文","fr":"Français","es":"Español","de":"Deutsch","ar":"العربية","ja":"日本語","pt":"Português"}[l]}
+              style={{background:lang===l?"rgba(61,107,94,.12)":"none",
+                border:lang===l?"1px solid rgba(61,107,94,.25)":"1px solid var(--border)",
+                borderRadius:4,cursor:"pointer",fontSize:14,padding:"3px 4px",
+                opacity:lang===l?1:.55,lineHeight:1}}>
+              {{"it":"🇮🇹","en":"🇬🇧","zh":"🇨🇳","fr":"🇫🇷","es":"🇪🇸","de":"🇩🇪","ar":"🇸🇦","ja":"🇯🇵","pt":"🇧🇷"}[l]}
+            </button>
+          ))}
+        </div>}
         <button onClick={()=>onStart(sel)}
           disabled={count===0}
           style={{padding:"12px 36px",background:count>0?"var(--sage)":"var(--border)",
@@ -2892,7 +2904,7 @@ function Selector({onStart}){
             transition:"background .2s"}}
           onMouseEnter={e=>{if(count>0)e.target.style.background="var(--ink)";}}
           onMouseLeave={e=>{if(count>0)e.target.style.background="var(--sage)";}}>
-          Begin Assessment →
+          {T.beginBtn}
         </button>
       </div>
     </div>
@@ -2900,7 +2912,8 @@ function Selector({onStart}){
 }
 
 // ─── ASSESSMENT VIEW ──────────────────────────────────────────────────────
-function Assessment({selected,onBack}){
+function Assessment({selected,onBack,tFn,switchLang,lang}){
+  const T=tFn||(CGA_TRANS[getCGALang()]||CGA_TRANS.it);
   const [activeId,setActiveId]=useState(null);
   const [data,setData]=useState({});
 
@@ -3067,7 +3080,7 @@ function Assessment({selected,onBack}){
             style={{width:"100%",padding:"8px",background:"rgba(255,255,255,.06)",
               border:"1px solid rgba(255,255,255,.1)",borderRadius:2,cursor:"pointer",
               color:"rgba(255,255,255,.4)",fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>
-            ← Change plan
+            {T.changePlan}
           </button>
         </div>
       </aside>
@@ -3097,7 +3110,7 @@ function Assessment({selected,onBack}){
               style={{padding:"7px 16px",border:"1px solid var(--border)",borderRadius:2,
                 background:"transparent",cursor:activeIdx>0?"pointer":"default",
                 fontSize:12,color:activeIdx>0?"var(--gray)":"var(--border)",
-                fontFamily:"'DM Sans',sans-serif"}}>← Prev</button>
+                fontFamily:"'DM Sans',sans-serif"}}>{T.prevBtn}</button>
             <button onClick={()=>{if(activeIdx<flatScales.length-1)setActiveId(flatScales[activeIdx+1].id)}}
               disabled={activeIdx===flatScales.length-1}
               style={{padding:"7px 16px",background:"var(--sage)",color:"white",
@@ -3106,7 +3119,7 @@ function Assessment({selected,onBack}){
                 fontSize:12,fontWeight:500,fontFamily:"'DM Sans',sans-serif",transition:"background .2s"}}
               onMouseEnter={e=>{if(activeIdx<flatScales.length-1)e.target.style.background="var(--ink)";}}
               onMouseLeave={e=>{e.target.style.background="var(--sage)";}}>
-              Next →
+              {T.nextBtn}
             </button>
           </div>
         </header>
@@ -3308,11 +3321,268 @@ function DisclaimerFooter(){
 }
 
 function App(){
+
+// ── i18n translations (CGA module) ────────────────────────────────────────
+const CGA_TRANS = {
+  it:{ lang:"it", dir:"ltr",
+    planTitle:"Seleziona il tuo", planTitleEm:"piano di valutazione",
+    planDesc:"Scegli le scale rilevanti per questo paziente. Puoi aggiungere o saltare scale durante la valutazione. CFS e Report sono pre-selezionati.",
+    planSubtitle:"Pianifica la tua VMG",
+    selectAll:"Seleziona tutto", deselectAll:"Deseleziona tutto",
+    scalesSelected:"scale selezionate",
+    estimatedTime:"Tempo stimato:", minUnit:"min",
+    beginBtn:"Inizia Valutazione →",
+    changePlan:"← Cambia piano",
+    prevBtn:"← Prec", nextBtn:"Succ →",
+    recommended:"RACCOMANDATO",
+    genReport:"Genera Report con IA",
+    reportTitle:"Report CGA",
+    reportSubtitle:"Compila le note cliniche, poi salva nella dashboard o stampa il PDF.",
+    domCognitive:"Valutazione Cognitiva",
+    domFunctional:"Valutazione Funzionale",
+    domClinical:"Valutazione Clinica",
+    domSocial:"Sociale & Qualità della Vita",
+    domPrognostic:"Valutazione Prognostica",
+    domReport:"Report & Care Plan",
+    domNotesCognitive:"Screening cognitivo, delirium, depressione.",
+    domNotesFunctional:"ADL, mobilità, cadute, performance fisica.",
+    domNotesClinical:"Comorbilità, farmaci, nutrizione, dolore.",
+    domNotesSocial:"Rete sociale, caregiver, sonno, continenza.",
+    domNotesPrognostic:"BRASS, MPI, CFS — rischio dimissione e mortalità.",
+    domNotesReport:"Genera il report AI con tutti i punteggi.",
+  },
+  en:{ lang:"en", dir:"ltr",
+    planTitle:"Select your", planTitleEm:"assessment plan",
+    planDesc:"Choose the scales relevant to this patient. You can always add or skip scales during the assessment. CFS and Report are pre-selected.",
+    planSubtitle:"Plan your CGA assessment",
+    selectAll:"Select all", deselectAll:"Deselect all",
+    scalesSelected:"scales selected",
+    estimatedTime:"Estimated time:", minUnit:"min",
+    beginBtn:"Begin Assessment →",
+    changePlan:"← Change plan",
+    prevBtn:"← Prev", nextBtn:"Next →",
+    recommended:"RECOMMENDED",
+    genReport:"Generate AI Report",
+    reportTitle:"CGA Report",
+    reportSubtitle:"Complete clinical notes, then save to dashboard or print PDF.",
+    domCognitive:"Cognitive Assessment",
+    domFunctional:"Functional Assessment",
+    domClinical:"Clinical Assessment",
+    domSocial:"Social & Quality of Life",
+    domPrognostic:"Prognostic Assessment",
+    domReport:"Report & Care Plan",
+    domNotesCognitive:"Cognitive screening, delirium, depression.",
+    domNotesFunctional:"ADL, mobility, falls, physical performance.",
+    domNotesClinical:"Comorbidities, medications, nutrition, pain.",
+    domNotesSocial:"Social network, caregiver, sleep, continence.",
+    domNotesPrognostic:"BRASS, MPI, CFS — discharge and mortality risk.",
+    domNotesReport:"Generate AI report with all scores.",
+  },
+  zh:{ lang:"zh", dir:"ltr",
+    planTitle:"选择您的", planTitleEm:"评估计划",
+    planDesc:"选择与此患者相关的量表。您可以在评估期间随时添加或跳过量表。CFS和报告已预先选中。",
+    planSubtitle:"规划您的CGA评估",
+    selectAll:"全选", deselectAll:"取消全选",
+    scalesSelected:"个量表已选",
+    estimatedTime:"预计时间：", minUnit:"分钟",
+    beginBtn:"开始评估 →",
+    changePlan:"← 更改计划",
+    prevBtn:"← 上一个", nextBtn:"下一个 →",
+    recommended:"推荐",
+    genReport:"生成AI报告",
+    reportTitle:"CGA报告",
+    reportSubtitle:"完成临床记录，然后保存到仪表板或打印PDF。",
+    domCognitive:"认知功能评估",
+    domFunctional:"功能状态评估",
+    domClinical:"临床状况评估",
+    domSocial:"社会支持与生活质量",
+    domPrognostic:"预后评估",
+    domReport:"报告与护理计划",
+    domNotesCognitive:"认知筛查、谵妄、抑郁。",
+    domNotesFunctional:"ADL、行动能力、跌倒、体能。",
+    domNotesClinical:"合并症、药物、营养、疼痛。",
+    domNotesSocial:"社会网络、照护者、睡眠、禁制。",
+    domNotesPrognostic:"BRASS、MPI、CFS——出院和死亡风险。",
+    domNotesReport:"生成包含所有评分的AI报告。",
+  },
+  fr:{ lang:"fr", dir:"ltr",
+    planTitle:"Sélectionnez votre", planTitleEm:"plan d'évaluation",
+    planDesc:"Choisissez les échelles pertinentes pour ce patient. Vous pouvez ajouter ou ignorer des échelles pendant l'évaluation. CFS et Rapport sont pré-sélectionnés.",
+    planSubtitle:"Planifiez votre EGC",
+    selectAll:"Tout sélectionner", deselectAll:"Tout désélectionner",
+    scalesSelected:"échelles sélectionnées",
+    estimatedTime:"Temps estimé :", minUnit:"min",
+    beginBtn:"Commencer l'évaluation →",
+    changePlan:"← Changer le plan",
+    prevBtn:"← Préc", nextBtn:"Suiv →",
+    recommended:"RECOMMANDÉ",
+    genReport:"Générer le rapport IA",
+    reportTitle:"Rapport EGC",
+    reportSubtitle:"Complétez les notes cliniques, puis enregistrez ou imprimez le PDF.",
+    domCognitive:"Évaluation cognitive",
+    domFunctional:"Évaluation fonctionnelle",
+    domClinical:"Évaluation clinique",
+    domSocial:"Social & Qualité de vie",
+    domPrognostic:"Évaluation pronostique",
+    domReport:"Rapport & Plan de soins",
+    domNotesCognitive:"Dépistage cognitif, delirium, dépression.",
+    domNotesFunctional:"AVQ, mobilité, chutes, performance physique.",
+    domNotesClinical:"Comorbidités, médicaments, nutrition, douleur.",
+    domNotesSocial:"Réseau social, aidant, sommeil, continence.",
+    domNotesPrognostic:"BRASS, MPI, CFS — risque de sortie et mortalité.",
+    domNotesReport:"Générez le rapport IA avec tous les scores.",
+  },
+  es:{ lang:"es", dir:"ltr",
+    planTitle:"Selecciona tu", planTitleEm:"plan de evaluación",
+    planDesc:"Elige las escalas relevantes para este paciente. Siempre puedes añadir o saltar escalas durante la evaluación. CFS e Informe están preseleccionados.",
+    planSubtitle:"Planifica tu VGC",
+    selectAll:"Seleccionar todo", deselectAll:"Deseleccionar todo",
+    scalesSelected:"escalas seleccionadas",
+    estimatedTime:"Tiempo estimado:", minUnit:"min",
+    beginBtn:"Comenzar evaluación →",
+    changePlan:"← Cambiar plan",
+    prevBtn:"← Ant", nextBtn:"Sig →",
+    recommended:"RECOMENDADO",
+    genReport:"Generar informe IA",
+    reportTitle:"Informe VGC",
+    reportSubtitle:"Completa las notas clínicas, luego guarda o imprime el PDF.",
+    domCognitive:"Evaluación cognitiva",
+    domFunctional:"Evaluación funcional",
+    domClinical:"Evaluación clínica",
+    domSocial:"Social & Calidad de vida",
+    domPrognostic:"Evaluación pronóstica",
+    domReport:"Informe & Plan de cuidados",
+    domNotesCognitive:"Cribado cognitivo, delirium, depresión.",
+    domNotesFunctional:"AVD, movilidad, caídas, rendimiento físico.",
+    domNotesClinical:"Comorbilidades, medicamentos, nutrición, dolor.",
+    domNotesSocial:"Red social, cuidador, sueño, continencia.",
+    domNotesPrognostic:"BRASS, MPI, CFS — riesgo de alta y mortalidad.",
+    domNotesReport:"Genera el informe IA con todas las puntuaciones.",
+  },
+  de:{ lang:"de", dir:"ltr",
+    planTitle:"Wählen Sie Ihren", planTitleEm:"Beurteilungsplan",
+    planDesc:"Wählen Sie die für diesen Patienten relevanten Skalen. Sie können Skalen während der Beurteilung hinzufügen oder überspringen. CFS und Bericht sind vorausgewählt.",
+    planSubtitle:"CGA-Beurteilung planen",
+    selectAll:"Alle auswählen", deselectAll:"Alle abwählen",
+    scalesSelected:"Skalen ausgewählt",
+    estimatedTime:"Geschätzte Zeit:", minUnit:"Min",
+    beginBtn:"Beurteilung starten →",
+    changePlan:"← Plan ändern",
+    prevBtn:"← Vorh", nextBtn:"Nächst →",
+    recommended:"EMPFOHLEN",
+    genReport:"KI-Bericht erstellen",
+    reportTitle:"CGA-Bericht",
+    reportSubtitle:"Klinische Notizen ausfüllen, dann speichern oder PDF drucken.",
+    domCognitive:"Kognitive Beurteilung",
+    domFunctional:"Funktionelle Beurteilung",
+    domClinical:"Klinische Beurteilung",
+    domSocial:"Soziales & Lebensqualität",
+    domPrognostic:"Prognostische Beurteilung",
+    domReport:"Bericht & Pflegeplan",
+    domNotesCognitive:"Kognitives Screening, Delir, Depression.",
+    domNotesFunctional:"ADL, Mobilität, Stürze, körperliche Leistung.",
+    domNotesClinical:"Komorbiditäten, Medikamente, Ernährung, Schmerz.",
+    domNotesSocial:"Soziales Netz, Pflegende, Schlaf, Kontinenz.",
+    domNotesPrognostic:"BRASS, MPI, CFS — Entlassungs- und Sterblichkeitsrisiko.",
+    domNotesReport:"KI-Bericht mit allen Scores erstellen.",
+  },
+  ar:{ lang:"ar", dir:"rtl",
+    planTitle:"اختر", planTitleEm:"خطة التقييم",
+    planDesc:"اختر المقاييس المناسبة لهذا المريض. يمكنك دائماً إضافة أو تخطي المقاييس أثناء التقييم. CFS والتقرير محددان مسبقاً.",
+    planSubtitle:"خطط لتقييم CGA",
+    selectAll:"تحديد الكل", deselectAll:"إلغاء تحديد الكل",
+    scalesSelected:"مقاييس محددة",
+    estimatedTime:"الوقت المقدر:", minUnit:"دقيقة",
+    beginBtn:"بدء التقييم ←",
+    changePlan:"تغيير الخطة →",
+    prevBtn:"التالي →", nextBtn:"← السابق",
+    recommended:"موصى به",
+    genReport:"إنشاء تقرير الذكاء الاصطناعي",
+    reportTitle:"تقرير CGA",
+    reportSubtitle:"أكمل الملاحظات السريرية، ثم احفظ أو اطبع PDF.",
+    domCognitive:"التقييم المعرفي",
+    domFunctional:"التقييم الوظيفي",
+    domClinical:"التقييم السريري",
+    domSocial:"الاجتماعي وجودة الحياة",
+    domPrognostic:"التقييم التشخيصي",
+    domReport:"التقرير وخطة الرعاية",
+    domNotesCognitive:"الفحص المعرفي، الهذيان، الاكتئاب.",
+    domNotesFunctional:"ADL، الحركة، السقوط، الأداء البدني.",
+    domNotesClinical:"الأمراض المصاحبة، الأدوية، التغذية، الألم.",
+    domNotesSocial:"الشبكة الاجتماعية، مقدم الرعاية، النوم، التبول.",
+    domNotesPrognostic:"BRASS، MPI، CFS — خطر الخروج والوفاة.",
+    domNotesReport:"إنشاء تقرير الذكاء الاصطناعي بجميع الدرجات.",
+  },
+  ja:{ lang:"ja", dir:"ltr",
+    planTitle:"評価計画を", planTitleEm:"選択してください",
+    planDesc:"この患者に関連するスケールを選択してください。評価中にいつでもスケールを追加またはスキップできます。CFSとレポートは事前選択済みです。",
+    planSubtitle:"CGA評価を計画",
+    selectAll:"全て選択", deselectAll:"全て解除",
+    scalesSelected:"件のスケール選択済み",
+    estimatedTime:"推定時間：", minUnit:"分",
+    beginBtn:"評価を開始 →",
+    changePlan:"← 計画を変更",
+    prevBtn:"← 前へ", nextBtn:"次へ →",
+    recommended:"推奨",
+    genReport:"AIレポートを生成",
+    reportTitle:"CGAレポート",
+    reportSubtitle:"臨床メモを記入し、ダッシュボードに保存またはPDFを印刷してください。",
+    domCognitive:"認知機能評価",
+    domFunctional:"機能的評価",
+    domClinical:"臨床評価",
+    domSocial:"社会・生活の質",
+    domPrognostic:"予後評価",
+    domReport:"レポート・ケアプラン",
+    domNotesCognitive:"認知スクリーニング、せん妄、うつ病。",
+    domNotesFunctional:"ADL、移動、転倒、身体機能。",
+    domNotesClinical:"併存疾患、薬剤、栄養、疼痛。",
+    domNotesSocial:"社会的ネットワーク、介護者、睡眠、禁制。",
+    domNotesPrognostic:"BRASS、MPI、CFS——退院リスクと死亡率。",
+    domNotesReport:"全スコア入りのAIレポートを生成。",
+  },
+  pt:{ lang:"pt", dir:"ltr",
+    planTitle:"Selecione o seu", planTitleEm:"plano de avaliação",
+    planDesc:"Escolha as escalas relevantes para este doente. Pode sempre adicionar ou saltar escalas durante a avaliação. CFS e Relatório estão pré-selecionados.",
+    planSubtitle:"Planeie a sua AGC",
+    selectAll:"Selecionar tudo", deselectAll:"Desselecionar tudo",
+    scalesSelected:"escalas selecionadas",
+    estimatedTime:"Tempo estimado:", minUnit:"min",
+    beginBtn:"Iniciar avaliação →",
+    changePlan:"← Alterar plano",
+    prevBtn:"← Ant", nextBtn:"Seg →",
+    recommended:"RECOMENDADO",
+    genReport:"Gerar relatório IA",
+    reportTitle:"Relatório AGC",
+    reportSubtitle:"Preencha as notas clínicas, depois guarde no painel ou imprima o PDF.",
+    domCognitive:"Avaliação cognitiva",
+    domFunctional:"Avaliação funcional",
+    domClinical:"Avaliação clínica",
+    domSocial:"Social & Qualidade de vida",
+    domPrognostic:"Avaliação prognóstica",
+    domReport:"Relatório & Plano de cuidados",
+    domNotesCognitive:"Rastreio cognitivo, delirium, depressão.",
+    domNotesFunctional:"AVD, mobilidade, quedas, performance física.",
+    domNotesClinical:"Comorbilidades, medicamentos, nutrição, dor.",
+    domNotesSocial:"Rede social, cuidador, sono, continência.",
+    domNotesPrognostic:"BRASS, MPI, CFS — risco de alta e mortalidade.",
+    domNotesReport:"Gere o relatório IA com todos os scores.",
+  },
+};
+function getCGALang(){ return localStorage.getItem("gs_lang")||"it"; }
+
+
   const [disclaimerDone, setDisclaimerDone] = React.useState(
     ()=>sessionStorage.getItem("gs_disclaimer")==="1"
   );
   function acceptDisclaimer(){ sessionStorage.setItem("gs_disclaimer","1"); setDisclaimerDone(true); }
   const [phase,setPhase]=useState("select");
+  const [lang,setLang]=useState(()=>getCGALang());
+  const T=CGA_TRANS[lang]||CGA_TRANS.it;
+  function switchLang(l){ localStorage.setItem("gs_lang",l); setLang(l); }
+  useEffect(()=>{
+    document.documentElement.lang=T.lang||lang;
+    document.documentElement.dir=T.dir||"ltr";
+  },[lang]);
   const [selected,setSelected]=useState({});
   if(!disclaimerDone) return <DisclaimerModal onAccept={acceptDisclaimer}/>;
   return(
